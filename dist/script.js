@@ -164,5 +164,18 @@ document.querySelector("[data-add-recommendations]").addEventListener("click", (
 document.querySelector("[data-restart-quiz]").addEventListener("click", () => { state.quiz = { occasion: "", vibe: "", size: "" }; state.recommendations = []; showQuizStep(0); });
 document.querySelectorAll(".hotspot").forEach(button => button.addEventListener("click", () => button.focus()));
 
+const legalDialog = document.querySelector("[data-legal-dialog]");
+document.querySelectorAll("[data-open-legal]").forEach(button => button.addEventListener("click", () => {
+  legalDialog.showModal();
+  const target = legalDialog.querySelector(`#${button.dataset.openLegal}`);
+  if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+}));
+document.querySelectorAll("[data-close-legal]").forEach(button => button.addEventListener("click", () => legalDialog.close()));
+legalDialog.addEventListener("click", event => {
+  const bounds = legalDialog.getBoundingClientRect();
+  const outside = event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
+  if (outside) legalDialog.close();
+});
+
 renderProducts();
 renderSelection();
