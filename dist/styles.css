@@ -128,3 +128,83 @@ footer .footer-meta{margin-top:3rem}
   .quick-size button{width:100%;min-width:0}
   .filters{overflow-x:visible;flex-wrap:wrap;margin-right:0;padding-right:0}
 }
+
+/* Theme controls */
+.header-actions{justify-self:end;display:flex;align-items:center;gap:1rem}
+.theme-toggle{min-width:88px;min-height:44px;padding:0 .75rem;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border:1px solid var(--line);background:transparent;cursor:pointer;text-transform:uppercase;letter-spacing:.09em;font-size:.58rem}
+.theme-toggle [data-theme-icon]{font-size:1rem;line-height:1}
+.theme-toggle:hover{border-color:var(--wine);color:var(--wine)}
+
+/* Dark theme */
+html[data-theme="dark"]{color-scheme:dark;--paper:#1b1517;--paper-2:#2b2024;--white:#241a1d;--line:rgba(255,245,241,.18)}
+html[data-theme="dark"] body{background:var(--paper);color:#f6ece8}
+html[data-theme="dark"] .site-header{background:rgba(27,21,23,.94);border-color:var(--line)}
+html[data-theme="dark"] .hero-copy{background:linear-gradient(145deg,#1b1517 0%,#2a1b21 100%)}
+html[data-theme="dark"] .hero-intro,
+html[data-theme="dark"] .section-heading>p,
+html[data-theme="dark"] .catalog-note p,
+html[data-theme="dark"] .store-copy>p:not(.kicker),
+html[data-theme="dark"] .product-details p,
+html[data-theme="dark"] .quick-size small,
+html[data-theme="dark"] .product-dialog-copy>p,
+html[data-theme="dark"] .product-dialog-description,
+html[data-theme="dark"] .product-consult p,
+html[data-theme="dark"] .product-dialog-size small,
+html[data-theme="dark"] .product-accordions details>div,
+html[data-theme="dark"] .legal-dialog-body p,
+html[data-theme="dark"] .drawer-empty p,
+html[data-theme="dark"] .drawer-item span{color:#d1c0ba!important}
+html[data-theme="dark"] a.button-outline{border-color:#f6ece8;color:#f6ece8!important;-webkit-text-fill-color:#f6ece8}
+html[data-theme="dark"] .button-outline:hover{background:#f6ece8;border-color:#f6ece8;color:#24191d;-webkit-text-fill-color:#24191d}
+html[data-theme="dark"] .button-light{background:#f6ece8;color:#24191d}
+html[data-theme="dark"] .quick-size button,
+html[data-theme="dark"] .drawer-size button,
+html[data-theme="dark"] .filters button,
+html[data-theme="dark"] .quiz-options button,
+html[data-theme="dark"] .quiz-sizes button,
+html[data-theme="dark"] .product-dialog-size button{border-color:var(--line);color:#f6ece8}
+html[data-theme="dark"] .hero-card,
+html[data-theme="dark"] .product-gallery-controls,
+html[data-theme="dark"] .product-gallery-note,
+html[data-theme="dark"] .product-dialog-close{background:rgba(36,26,29,.94);color:#f6ece8}
+html[data-theme="dark"] .catalog{background:var(--white)}
+html[data-theme="dark"] .quiz,
+html[data-theme="dark"] .product-dialog,
+html[data-theme="dark"] .legal-dialog,
+html[data-theme="dark"] .legal-dialog-head,
+html[data-theme="dark"] .drawer-panel{background:var(--paper);color:#f6ece8}
+html[data-theme="dark"] .product-consult,
+html[data-theme="dark"] .product-accordions,
+html[data-theme="dark"] .product-accordions details,
+html[data-theme="dark"] .legal-dialog-head,
+html[data-theme="dark"] .legal-dialog-body section,
+html[data-theme="dark"] .drawer-head,
+html[data-theme="dark"] .drawer-item{border-color:var(--line)}
+html[data-theme="dark"] .product-data-note,
+html[data-theme="dark"] .drawer-service-notes,
+html[data-theme="dark"] .legal-note{background:#342329;color:#eadbd6}
+html[data-theme="dark"] .save-button{background:rgba(36,26,29,.92);color:#f6ece8}
+html[data-theme="dark"] .save-button.selected{background:var(--blue);color:#fff}
+html[data-theme="dark"] .product-tag{color:#24191d}
+html[data-theme="dark"] .theme-toggle{color:#f6ece8}
+html[data-theme="dark"] .theme-toggle:hover{border-color:var(--butter);color:var(--butter)}
+html[data-theme="dark"] :focus-visible{outline-color:var(--butter)}
+html[data-theme="dark"] .hero h1 em,
+html[data-theme="dark"] .section-heading h2 em,
+html[data-theme="dark"] .store h2 em,
+html[data-theme="dark"] .product-details>span,
+html[data-theme="dark"] .product-dialog-copy>span,
+html[data-theme="dark"] .product-dialog-copy>p,
+html[data-theme="dark"] .hero-card>span,
+html[data-theme="dark"] .quiz-top,
+html[data-theme="dark"] .result-label,
+html[data-theme="dark"] .store dt,
+html[data-theme="dark"] .legal-dialog-head span,
+html[data-theme="dark"] .legal-dialog-body section>span,
+html[data-theme="dark"] .drawer-head span{color:#e29ab0!important}
+
+@media(max-width:720px){
+  .header-actions{gap:.35rem}
+  .theme-toggle{min-width:44px;width:44px;padding:0}
+  .theme-toggle [data-theme-label]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+}

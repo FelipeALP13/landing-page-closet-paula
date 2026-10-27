@@ -1,3 +1,40 @@
+const themeStorageKey = "cpm-theme";
+const themeColor = document.querySelector('meta[name="theme-color"]');
+const themeToggle = document.querySelector("[data-theme-toggle]");
+const themeLabel = document.querySelector("[data-theme-label]");
+const themeIcon = document.querySelector("[data-theme-icon]");
+const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+function readStoredTheme() {
+  try {
+    const value = localStorage.getItem(themeStorageKey);
+    return value === "light" || value === "dark" ? value : "";
+  } catch {
+    return "";
+  }
+}
+
+function applyTheme(theme, persistPreference = false) {
+  const dark = theme === "dark";
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  themeToggle.setAttribute("aria-pressed", String(dark));
+  themeToggle.setAttribute("aria-label", dark ? "Ativar modo claro" : "Ativar modo escuro");
+  themeToggle.title = dark ? "Ativar modo claro" : "Ativar modo escuro";
+  themeLabel.textContent = dark ? "Claro" : "Escuro";
+  themeIcon.textContent = dark ? "☀" : "☾";
+  themeColor.content = dark ? "#1b1517" : "#7d3049";
+  if (persistPreference) {
+    try { localStorage.setItem(themeStorageKey, dark ? "dark" : "light"); } catch {}
+  }
+}
+
+applyTheme(readStoredTheme() || (systemTheme.matches ? "dark" : "light"));
+themeToggle.addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true));
+systemTheme.addEventListener("change", event => {
+  if (!readStoredTheme()) applyTheme(event.matches ? "dark" : "light");
+});
+
 const phone = "5512997196086";
 const whatsappBase = `https://wa.me/${phone}`;
 const allowedSizes = new Set(["PP", "P", "M", "G", "GG"]);
