@@ -6,13 +6,10 @@ const largeImageNames = new Set(["look-02", "look-03", "look-05", "look-08", "lo
 const products = [
   { id: "cacau", sku: "CPM-01", name: "Cacau & Areia", image: "look-01", category: ["encontro", "dia"], mood: ["classica", "marcante"], tag: "Look completo" },
   { id: "rosa", sku: "CPM-02", name: "Rosa & Denim", image: "look-03", category: ["dia", "verao"], mood: ["leve", "marcante"], tag: "Leve" },
-  { id: "azul", sku: "CPM-03", name: "Azul Claro", image: "look-04", category: ["dia", "verao"], mood: ["leve", "classica"], tag: "Versátil" },
   { id: "preto", sku: "CPM-04", name: "Essencial Preto", image: "look-05", category: ["trabalho", "encontro"], mood: ["classica", "marcante"], tag: "Mais escolhido" },
   { id: "solar", sku: "CPM-05", name: "Amarelo Solar", image: "look-06", category: ["encontro", "verao"], mood: ["leve", "marcante"], tag: "Destaque" },
-  { id: "leve", sku: "CPM-06", name: "Branco Leve", image: "look-07", category: ["dia", "verao"], mood: ["leve"], tag: "Novidade" },
   { id: "marinho", sku: "CPM-07", name: "Marinho & Areia", image: "look-08", category: ["trabalho", "encontro"], mood: ["classica"], tag: "Elegante" },
   { id: "denim", sku: "CPM-08", name: "Denim Atual", image: "look-09", category: ["trabalho", "dia"], mood: ["classica", "marcante"], tag: "Curadoria CPM" },
-  { id: "chocolate", sku: "CPM-09", name: "Camadas de Chocolate", image: "look-10", category: ["encontro", "dia"], mood: ["marcante", "classica"], tag: "Editorial" },
   { id: "laise", sku: "CPM-10", name: "Laise Azul Céu", image: "look-12", category: ["dia", "verao"], mood: ["leve"], tag: "Detalhe" }
 ];
 
@@ -401,6 +398,24 @@ function openLegal(section) {
 document.querySelectorAll("[data-open-legal]").forEach(button => button.addEventListener("click", () => openLegal(button.dataset.openLegal)));
 document.querySelectorAll("[data-close-legal]").forEach(button => button.addEventListener("click", () => legalDialog.close()));
 legalDialog.addEventListener("click", event => event.target === legalDialog && legalDialog.close());
+
+document.querySelectorAll("[data-clear-local-data]").forEach(button => button.addEventListener("click", () => {
+  state.selected.clear();
+  state.size = "";
+  state.quiz = { occasion: "", vibe: "", size: "" };
+  state.recommendations = [];
+  try {
+    localStorage.removeItem("cpm-selection");
+    localStorage.removeItem("cpm-size");
+  } catch {
+    // A interface continua utilizável quando o navegador bloqueia o armazenamento local.
+  }
+  renderProducts();
+  renderSelection();
+  showQuizStep(0);
+  showToast("Seleção e tamanho apagados deste navegador");
+  track("clear_local_data");
+}));
 
 renderProducts();
 renderSelection();
