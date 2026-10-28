@@ -4,13 +4,13 @@ const allowedSizes = new Set(["PP", "P", "M", "G", "GG"]);
 const largeImages = new Set(["look-02", "look-03", "look-05", "look-08", "look-09", "look-12"]);
 
 const products = [
-  { id: "cacau", sku: "CPM-01", name: "Conjunto Cacau & Areia", image: "look-01", category: "conjuntos", tag: "Look completo", keywords: "marrom bege saia conjunto" },
-  { id: "rosa", sku: "CPM-02", name: "Cropped Rosa Halter", image: "look-03", category: "croppeds", tag: "Novidade", keywords: "rosa top cropped jeans" },
-  { id: "preto", sku: "CPM-04", name: "Blusa Essential Preta", image: "look-05", category: "blusas", tag: "Mais escolhido", keywords: "preto blusa basica calca" },
-  { id: "solar", sku: "CPM-05", name: "Vestido Amarelo Solar", image: "look-06", category: "vestidos", tag: "Destaque", keywords: "vestido longo amarelo festa" },
-  { id: "marinho", sku: "CPM-07", name: "Blusa Laço Marinho", image: "look-08", category: "blusas", tag: "Elegante", keywords: "azul marinho blusa laco" },
-  { id: "denim", sku: "CPM-08", name: "Jeans Azul Atual", image: "look-09", category: "jeans", tag: "Curadoria CPM", keywords: "calca jeans azul denim" },
-  { id: "laise", sku: "CPM-10", name: "Blusa Laise Azul Céu", image: "look-12", category: "blusas", tag: "Detalhes", keywords: "azul claro laise bordado blusa" }
+  { id: "cacau", sku: "CPM-01", name: "Conjunto Cacau & Areia", image: "look-01", category: "conjuntos", occasions: ["dia", "especial"], tag: "Look completo", keywords: "marrom bege saia conjunto" },
+  { id: "rosa", sku: "CPM-02", name: "Cropped Rosa Halter", image: "look-03", category: "croppeds", occasions: ["dia", "especial"], tag: "Novidade", keywords: "rosa top cropped jeans" },
+  { id: "preto", sku: "CPM-04", name: "Blusa Essential Preta", image: "look-05", category: "blusas", occasions: ["trabalho", "especial"], tag: "Mais escolhido", keywords: "preto blusa basica calca" },
+  { id: "solar", sku: "CPM-05", name: "Vestido Amarelo Solar", image: "look-06", category: "vestidos", occasions: ["especial"], tag: "Destaque", keywords: "vestido longo amarelo festa" },
+  { id: "marinho", sku: "CPM-07", name: "Blusa Laço Marinho", image: "look-08", category: "blusas", occasions: ["trabalho", "especial"], tag: "Elegante", keywords: "azul marinho blusa laco" },
+  { id: "denim", sku: "CPM-08", name: "Jeans Azul Atual", image: "look-09", category: "jeans", occasions: ["dia", "trabalho"], tag: "Curadoria CPM", keywords: "calca jeans azul denim" },
+  { id: "laise", sku: "CPM-10", name: "Blusa Laise Azul Céu", image: "look-12", category: "blusas", occasions: ["dia", "especial"], tag: "Detalhes", keywords: "azul claro laise bordado blusa" }
 ];
 
 const categoryLabels = {
@@ -22,12 +22,27 @@ const categoryLabels = {
   conjuntos: "Conjuntos"
 };
 
+const quizCategoryLabels = {
+  vestidos: "Vestidos",
+  tops: "Croppeds e blusas",
+  jeans: "Jeans e calças",
+  conjuntos: "Look completo"
+};
+
+const quizOccasionLabels = {
+  dia: "Dia a dia",
+  trabalho: "Trabalho",
+  especial: "Sair ou ocasião especial"
+};
+
 const state = {
   category: "todos",
   search: "",
   selected: new Set(readStoredArray("cpm-selection").filter(id => products.some(product => product.id === id))),
   size: readStoredSize(),
-  activeProduct: ""
+  activeProduct: "",
+  quiz: { category: "", occasion: "", size: "" },
+  recommendations: []
 };
 
 const grid = document.querySelector("[data-product-grid]");
@@ -145,7 +160,6 @@ function setCategory(category, scroll = true) {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  document.querySelector("[data-collection-title]")?.remove();
   document.querySelector("#collection-title").textContent = categoryLabels[category];
   renderProducts();
   categoryNav.classList.remove("open");
@@ -173,6 +187,12 @@ menuButton.addEventListener("click", () => {
   menuButton.setAttribute("aria-expanded", String(open));
   menuButton.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
 });
+
+categoryNav.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener("click", () => {
+  categoryNav.classList.remove("open");
+  menuButton.setAttribute("aria-expanded", "false");
+  menuButton.setAttribute("aria-label", "Abrir menu");
+}));
 
 function toggleProduct(id) {
   const product = products.find(item => item.id === id);
@@ -212,7 +232,10 @@ function renderSelection() {
 
   if (selected.length && state.size) {
     const list = selected.map((product, index) => `${index + 1}. ${product.name} (${product.sku})`).join("\n");
-    checkout.href = whatsappUrl(`Olá! Montei esta seleção no site da Closet Paula Miranda:\n${list}\n\nMeu tamanho mais comum é ${state.size}. Gostaria de confirmar valores, medidas, disponibilidade e entrega ou retirada.`);
+    const quizContext = state.quiz.category && state.quiz.occasion
+      ? `\nPedido na Curadoria CPM: ${quizCategoryLabels[state.quiz.category]} para ${quizOccasionLabels[state.quiz.occasion].toLowerCase()}.`
+      : "";
+    checkout.href = whatsappUrl(`Olá! Montei esta seleção no site da Closet Paula Miranda:\n${list}\n\nMeu tamanho mais comum é ${state.size}.${quizContext}\nGostaria de confirmar valores, medidas, disponibilidade e entrega ou retirada.`);
     checkout.textContent = "Consultar seleção no WhatsApp ↗";
     checkout.setAttribute("aria-disabled", "false");
   } else {
@@ -292,6 +315,85 @@ productDialog.querySelector("[data-product-toggle]").addEventListener("click", (
 document.querySelectorAll("[data-close-product]").forEach(button => button.addEventListener("click", () => productDialog.close()));
 productDialog.addEventListener("click", event => {
   if (event.target === productDialog) productDialog.close();
+});
+
+const quizSteps = [...document.querySelectorAll("[data-quiz-step]")];
+const quizProgress = document.querySelector("[data-quiz-progress]");
+const quizResult = document.querySelector("[data-quiz-result]");
+const quizResultProducts = document.querySelector("[data-quiz-result-products]");
+
+function showQuizStep(index) {
+  quizSteps.forEach((step, stepIndex) => {
+    step.hidden = stepIndex !== index;
+    step.classList.toggle("active", stepIndex === index);
+  });
+  quizResult.hidden = true;
+  quizProgress.textContent = `0${index + 1} / 03`;
+}
+
+function quizCategoryMatch(product, answer) {
+  if (answer === "tops") return product.category === "croppeds" || product.category === "blusas";
+  return product.category === answer;
+}
+
+function finishQuiz() {
+  quizSteps.forEach(step => { step.hidden = true; });
+  quizResult.hidden = false;
+  quizProgress.textContent = "RECOMENDAÇÃO PRONTA";
+  state.size = state.quiz.size;
+  state.recommendations = products
+    .map((product, index) => ({
+      product,
+      index,
+      score: (quizCategoryMatch(product, state.quiz.category) ? 8 : 0) + (product.occasions.includes(state.quiz.occasion) ? 4 : 0)
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, 3)
+    .map(item => item.product.id);
+
+  const recommended = state.recommendations.map(id => products.find(product => product.id === id)).filter(Boolean);
+  const titles = {
+    vestidos: "Presença pronta para acontecer",
+    tops: "Novas combinações para o seu closet",
+    jeans: "Bases que multiplicam seus looks",
+    conjuntos: "Um look completo, do seu jeito"
+  };
+  document.querySelector("[data-quiz-result-title]").textContent = titles[state.quiz.category];
+  document.querySelector("[data-quiz-result-copy]").textContent = `Selecionamos três opções para ${quizOccasionLabels[state.quiz.occasion].toLowerCase()}, priorizando ${quizCategoryLabels[state.quiz.category].toLowerCase()}. O tamanho ${state.quiz.size} será usado como referência no atendimento.`;
+  quizResultProducts.innerHTML = recommended.map(product => `
+    <button class="quiz-result-product" type="button" data-open-quiz-product="${product.id}" aria-label="Ver ${product.name}">
+      <img src="${imagePath(product)}" alt="" width="480" height="640" loading="lazy" />
+      <span>${product.name}</span>
+    </button>`).join("");
+  quizResultProducts.querySelectorAll("[data-open-quiz-product]").forEach(button => button.addEventListener("click", () => openProduct(button.dataset.openQuizProduct)));
+
+  const list = recommended.map((product, index) => `${index + 1}. ${product.name} (${product.sku})`).join("\n");
+  document.querySelector("[data-quiz-whatsapp]").href = whatsappUrl(`Olá! Fiz a Curadoria CPM no site e recebi estas recomendações:\n${list}\n\nEu procuro ${quizCategoryLabels[state.quiz.category].toLowerCase()} para ${quizOccasionLabels[state.quiz.occasion].toLowerCase()}. Meu tamanho mais comum é ${state.quiz.size}. Gostaria de confirmar valores, medidas, disponibilidade e opções de entrega ou retirada.`);
+  persist();
+  renderSelection();
+}
+
+quizSteps.forEach((step, index) => {
+  step.querySelectorAll("[data-quiz-answer]").forEach(button => button.addEventListener("click", () => {
+    state.quiz[step.dataset.quizStep] = button.dataset.quizAnswer;
+    if (index < quizSteps.length - 1) showQuizStep(index + 1);
+    else finishQuiz();
+  }));
+});
+
+document.querySelector("[data-add-recommendations]").addEventListener("click", () => {
+  state.recommendations.forEach(id => state.selected.add(id));
+  persist();
+  renderProducts();
+  renderSelection();
+  showToast("As recomendações entraram na sua seleção");
+  openDrawer();
+});
+
+document.querySelector("[data-quiz-restart]").addEventListener("click", () => {
+  state.quiz = { category: "", occasion: "", size: "" };
+  state.recommendations = [];
+  showQuizStep(0);
 });
 
 document.addEventListener("keydown", event => {
