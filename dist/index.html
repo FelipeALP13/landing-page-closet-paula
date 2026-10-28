@@ -3,189 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#7d3049" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#11100f" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; script-src 'self' 'sha256-VtNCyzsENMMvOg5Om0IDLQjCe4eUF9UZ4M72pVEKmCc='; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; upgrade-insecure-requests" />
-    <meta name="description" content="Closet Paula Miranda — para mulheres autênticas e despojadas. Descubra seu look, selecione o tamanho e compre com atendimento pelo WhatsApp." />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; upgrade-insecure-requests" />
+    <meta name="description" content="Closet Paula Miranda — vestidos, croppeds, blusas, jeans e conjuntos com atendimento personalizado em São José dos Campos." />
     <meta name="robots" content="noindex, nofollow, noarchive" />
-    <meta property="og:title" content="Closet Paula Miranda | Seu look, seu momento" />
-    <meta property="og:description" content="Use o Provador CPM, encontre looks para o seu estilo e finalize pelo WhatsApp." />
-    <meta property="og:image" content="https://closet-paula-miranda.saltytern4.chatgpt.site/assets/look-08.jpg" />
-    <meta property="og:image:alt" content="Look Marinho e Areia da Closet Paula Miranda" />
+    <meta property="og:title" content="Closet Paula Miranda | Moda feminina" />
+    <meta property="og:description" content="Explore a coleção por categoria e consulte tamanhos e disponibilidade pelo WhatsApp." />
+    <meta property="og:image" content="https://closet-paula-miranda.saltytern4.chatgpt.site/assets/look-06-960.webp" />
     <meta property="og:url" content="https://closet-paula-miranda.saltytern4.chatgpt.site/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
-    <meta name="twitter:card" content="summary_large_image" />
     <title>Closet Paula Miranda | Moda feminina em São José dos Campos</title>
     <link rel="canonical" href="https://closet-paula-miranda.saltytern4.chatgpt.site/" />
-    <link rel="preload" as="image" href="./assets/look-08-960.webp" imagesrcset="./assets/look-08-480.webp 480w, ./assets/look-08-960.webp 960w, ./assets/look-08-1440.webp 1440w" imagesizes="(max-width: 1000px) 100vw, 54vw" />
+    <link rel="preload" as="image" href="./assets/look-06-960.webp" imagesrcset="./assets/look-06-480.webp 480w, ./assets/look-06-960.webp 960w" imagesizes="(max-width: 760px) 100vw, 48vw" />
     <link rel="icon" href="./assets/logo.jpg" />
     <link rel="stylesheet" href="./styles.css" />
     <script src="./script.js" defer></script>
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "ClothingStore",
-        "name": "Closet Paula Miranda",
-        "description": "Moda feminina com curadoria e atendimento pelo WhatsApp.",
-        "telephone": "+55 12 99719-6086",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Rua Planura, 204",
-          "addressLocality": "São José dos Campos",
-          "addressRegion": "SP",
-          "addressCountry": "BR"
-        },
-        "openingHoursSpecification": [
-          { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "09:00", "closes": "18:00" },
-          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "15:00" }
-        ],
-        "sameAs": [
-          "https://www.instagram.com/closetpaulamiranda/",
-          "https://www.facebook.com/people/Closet-Paula-Miranda/61557378347822/"
-        ]
-      }
-    </script>
   </head>
   <body>
     <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
-    <div class="announcement"><span>Prévia privada — catálogo em validação</span><span>Atendimento via WhatsApp</span><span>Loja física em São José dos Campos</span></div>
+    <div class="announcement" aria-label="Informações da loja"><div class="announcement-track"><span>Atendimento personalizado pelo WhatsApp</span><i>✦</i><span>Retire em São José dos Campos</span><i>✦</i><span>Envio combinado com a equipe</span><i>✦</i><span>Atendimento personalizado pelo WhatsApp</span><i>✦</i></div></div>
 
     <header class="site-header">
-      <a class="brand" href="#inicio" aria-label="Closet Paula Miranda — início"><small>Closet</small><strong>Paula Miranda</strong></a>
-      <nav aria-label="Navegação principal"><a href="#novidades">Novidades</a><a href="#provador">Provador CPM</a><a href="#loja">A loja</a></nav>
-      <div class="header-actions">
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Ativar modo escuro" aria-pressed="false" title="Ativar modo escuro"><span aria-hidden="true" data-theme-icon>☾</span><span data-theme-label>Escuro</span></button>
-        <button class="selection-trigger" type="button" data-open-selection>Minha seleção <span data-selection-count>0</span></button>
+      <div class="header-main">
+        <button class="menu-button" type="button" data-menu-toggle aria-label="Abrir menu" aria-expanded="false"><span></span><span></span></button>
+        <a class="brand" href="#inicio" aria-label="Closet Paula Miranda — início"><small>Closet</small><strong>Paula Miranda</strong></a>
+        <label class="search-box"><span class="sr-only">Buscar no catálogo</span><input type="search" placeholder="Olá, o que você procura?" data-search /><span aria-hidden="true">⌕</span></label>
+        <div class="header-actions">
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Ativar modo escuro" title="Ativar modo escuro"><span data-theme-icon aria-hidden="true">☾</span></button>
+          <a class="header-whatsapp" href="https://wa.me/5512997196086" target="_blank" rel="noopener noreferrer"><span>Atendimento</span><strong>WhatsApp</strong></a>
+          <button class="bag-button" type="button" data-open-selection aria-label="Abrir minha seleção">Minha seleção <b data-selection-count>0</b></button>
+        </div>
       </div>
+      <nav class="category-nav" aria-label="Categorias" data-category-nav><button class="active" type="button" data-category="todos">Novidades</button><button type="button" data-category="vestidos">Vestidos</button><button type="button" data-category="croppeds">Croppeds</button><button type="button" data-category="blusas">Blusas</button><button type="button" data-category="jeans">Jeans &amp; calças</button><button type="button" data-category="conjuntos">Conjuntos</button></nav>
     </header>
 
     <main id="conteudo">
       <section class="hero" id="inicio" aria-labelledby="hero-title">
-        <div class="hero-copy reveal is-visible">
-          <p class="kicker">Nova curadoria • Closet Paula Miranda</p>
-          <h1 id="hero-title">Seu look.<br />Seu momento.<br /><em>Seu match.</em></h1>
-          <p class="hero-intro">Descubra produções que combinam com sua rotina e finalize diretamente com a equipe pelo WhatsApp.</p>
-          <div class="hero-actions"><a class="button button-dark" href="#novidades">Ver os looks <span>↓</span></a><a class="button button-outline" data-direct-whatsapp href="#">Falar com a consultora <span>↗</span></a></div>
-          <div class="quick-size" aria-labelledby="quick-size-label">
-            <span id="quick-size-label">Qual é o seu tamanho mais comum?</span>
-            <div role="group" aria-label="Escolha seu tamanho"><button type="button" data-global-size="PP">PP</button><button type="button" data-global-size="P">P</button><button type="button" data-global-size="M">M</button><button type="button" data-global-size="G">G</button><button type="button" data-global-size="GG">GG</button></div>
-            <small>Usaremos como referência. Modelagem e disponibilidade são confirmadas pela equipe.</small>
-          </div>
-        </div>
-        <div class="hero-visual reveal is-visible">
-          <img src="./assets/look-08-960.webp" srcset="./assets/look-08-480.webp 480w, ./assets/look-08-960.webp 960w, ./assets/look-08-1440.webp 1440w" sizes="(max-width: 1000px) 100vw, 54vw" alt="Look Marinho e Areia da Closet Paula Miranda" fetchpriority="high" decoding="async" width="2316" height="3057" />
-          <div class="hero-card"><span>LOOK / 07</span><strong>Marinho &amp; Areia</strong><button type="button" data-quick-add="marinho">Adicionar à seleção <b>+</b></button></div>
-          <span class="vertical-note">Para mulheres autênticas e despojadas.</span>
+        <div class="hero-copy reveal is-visible"><p class="eyebrow">Coleção Paula Miranda</p><h1 id="hero-title">Vista a sua<br /><em>melhor versão.</em></h1><p>Uma curadoria feminina, elegante e descomplicada para todos os seus momentos.</p><div class="hero-actions"><a class="button button-dark" href="#colecao">Ver novidades</a><a class="text-link" href="#categorias">Comprar por categoria <span>↘</span></a></div></div>
+        <div class="hero-collage" aria-label="Destaques da coleção"><figure class="hero-main-image"><img src="./assets/look-06-960.webp" srcset="./assets/look-06-480.webp 480w, ./assets/look-06-960.webp 960w" sizes="(max-width: 760px) 100vw, 48vw" alt="Vestido amarelo longo da Closet Paula Miranda" fetchpriority="high" width="960" height="1280" /></figure><figure class="hero-detail-image"><img src="./assets/look-12-480.webp" alt="Detalhe de blusa azul em laise" fetchpriority="high" width="480" height="640" /></figure><span class="hero-stamp">Nova<br />coleção<br /><b>✦</b></span></div>
+      </section>
+
+      <section class="category-showcase section" id="categorias" aria-labelledby="categories-title">
+        <header class="section-heading reveal"><div><p class="eyebrow">Escolha seu mood</p><h2 id="categories-title">Compre por categoria</h2></div><p>Entre direto na categoria que combina com o que você procura hoje.</p></header>
+        <div class="category-grid">
+          <button class="category-card category-card-tall reveal" type="button" data-jump-category="vestidos"><img src="./assets/look-06-960.webp" alt="Vestidos" loading="lazy" decoding="async" width="960" height="1280" /><span><small>01</small><strong>Vestidos</strong><i>Ver categoria ↗</i></span></button>
+          <button class="category-card reveal" type="button" data-jump-category="croppeds"><img src="./assets/look-03-960.webp" alt="Croppeds" loading="lazy" decoding="async" width="960" height="1280" /><span><small>02</small><strong>Croppeds</strong><i>Ver categoria ↗</i></span></button>
+          <button class="category-card reveal" type="button" data-jump-category="blusas"><img src="./assets/look-08-960.webp" alt="Blusas" loading="lazy" decoding="async" width="960" height="1280" /><span><small>03</small><strong>Blusas</strong><i>Ver categoria ↗</i></span></button>
+          <button class="category-card category-card-wide reveal" type="button" data-jump-category="jeans"><img src="./assets/look-09-960.webp" alt="Jeans e calças" loading="lazy" decoding="async" width="960" height="1280" /><span><small>04</small><strong>Jeans &amp; calças</strong><i>Ver categoria ↗</i></span></button>
         </div>
       </section>
 
-      <section class="benefits" aria-label="Diferenciais da compra">
-        <article><span>01</span><div><strong>Curadoria real</strong><small>Peças mostradas no corpo, em looks possíveis.</small></div></article>
-        <article><span>02</span><div><strong>Compra assistida</strong><small>Dúvidas de tamanho e combinação no WhatsApp.</small></div></article>
-        <article><span>03</span><div><strong>Do seu jeito</strong><small>Retire na loja ou combine o envio com a equipe.</small></div></article>
-      </section>
-
-      <section class="catalog section" id="novidades" aria-labelledby="catalog-title">
-        <div class="section-heading reveal"><div><p class="kicker">01 / Novidades</p><h2 id="catalog-title">Vista agora.<br /><em>Decida com calma.</em></h2></div><p>Filtre por ocasião, abra os detalhes e salve seus favoritos. Valores, tamanhos e disponibilidade são confirmados com a equipe pelo WhatsApp.</p></div>
-        <div class="filters reveal" role="group" aria-label="Filtrar looks por ocasião"><button class="active" type="button" data-filter="todos">Todos</button><button type="button" data-filter="dia">Dia a dia</button><button type="button" data-filter="trabalho">Trabalho</button><button type="button" data-filter="encontro">Encontro</button><button type="button" data-filter="verao">Verão</button></div>
+      <section class="collection section" id="colecao" aria-labelledby="collection-title">
+        <header class="section-heading collection-heading reveal"><div><p class="eyebrow">Vitrine CPM</p><h2 id="collection-title">Novidades</h2></div><p data-results-copy>Peças escolhidas para deixar o seu closet ainda mais você.</p></header>
+        <div class="mobile-filters" role="group" aria-label="Filtrar produtos"><button class="active" type="button" data-category="todos">Tudo</button><button type="button" data-category="vestidos">Vestidos</button><button type="button" data-category="croppeds">Croppeds</button><button type="button" data-category="blusas">Blusas</button><button type="button" data-category="jeans">Jeans</button><button type="button" data-category="conjuntos">Conjuntos</button></div>
         <div class="product-grid" data-product-grid></div>
-        <noscript><p>Ative o JavaScript para explorar a vitrine. Você também pode comprar pelo <a href="https://www.instagram.com/closetpaulamiranda/">Instagram</a>.</p></noscript>
-        <div class="catalog-note reveal"><p><strong>Viu algo que amou?</strong> Salve na sua seleção. Você não precisa decidir uma peça por vez.</p><button type="button" class="text-button" data-open-selection>Revisar minha seleção <span>↗</span></button></div>
+        <div class="empty-state" data-empty-state hidden><span>✦</span><h3>Nenhuma peça encontrada</h3><p>Tente outra busca ou explore todas as novidades.</p><button class="button button-dark" type="button" data-clear-filters>Ver todas as peças</button></div>
       </section>
 
-      <section class="purchase-steps" aria-labelledby="steps-title">
-        <div><p class="kicker">Compra simples</p><h2 id="steps-title">Do match para o closet.</h2></div>
-        <ol><li><span>01</span><strong>Explore</strong><p>Veja os detalhes ou use o Provador CPM.</p></li><li><span>02</span><strong>Monte sua seleção</strong><p>Salve os looks e indique seu tamanho mais comum.</p></li><li><span>03</span><strong>Converse com a equipe</strong><p>Confirme valores, disponibilidade, pagamento e entrega.</p></li></ol>
-      </section>
+      <section class="editorial-banner" aria-labelledby="editorial-title"><img src="./assets/look-02-1440.webp" alt="Look da Closet Paula Miranda em frente à loja" loading="lazy" decoding="async" width="1440" height="1901" /><div class="editorial-overlay"></div><div class="editorial-copy reveal"><p class="eyebrow">Atendimento que entende você</p><h2 id="editorial-title">Achou a peça.<br /><em>A gente ajuda no look.</em></h2><p>Envie sua seleção pelo WhatsApp e confirme tamanho, caimento, disponibilidade e entrega com a equipe.</p><button class="button button-light" type="button" data-open-selection>Revisar minha seleção <span data-selection-count>0</span></button></div></section>
 
-      <section class="stylist" id="provador" aria-labelledby="stylist-title">
-        <div class="stylist-intro reveal">
-          <p class="kicker kicker-light">02 / Diferencial exclusivo</p><span class="stylist-badge">✦ Leva menos de 1 minuto</span>
-          <h2 id="stylist-title">Provador<br /><em>CPM.</em></h2>
-          <p>Responda três perguntas e descubra os looks da curadoria que mais combinam com seu momento.</p>
-          <div class="stylist-reasons"><span>Sem cadastro</span><span>Sem compromisso</span><span>Com orientação da equipe</span></div>
-        </div>
-        <div class="quiz reveal" data-quiz>
-          <div class="quiz-top"><span>SEU MATCH DE ESTILO</span><span data-quiz-progress>01 — 03</span></div>
-          <div class="quiz-step active" data-step="occasion">
-            <p class="quiz-question">Para qual momento você quer se vestir?</p>
-            <div class="quiz-options"><button type="button" data-answer="trabalho"><span>01</span><strong>Trabalho &amp; compromissos</strong><small>Arrumada, confortável e segura</small></button><button type="button" data-answer="dia"><span>02</span><strong>Dia leve &amp; fim de semana</strong><small>Prática sem perder a graça</small></button><button type="button" data-answer="encontro"><span>03</span><strong>Encontro &amp; ocasião especial</strong><small>Uma produção para marcar presença</small></button></div>
-          </div>
-          <div class="quiz-step" data-step="vibe" hidden>
-            <p class="quiz-question">Qual energia combina mais com você?</p>
-            <div class="quiz-options"><button type="button" data-answer="leve"><span>01</span><strong>Leve e natural</strong><small>Cores claras e movimento</small></button><button type="button" data-answer="classica"><span>02</span><strong>Clássica atual</strong><small>Elegância com informação de moda</small></button><button type="button" data-answer="marcante"><span>03</span><strong>Marcante e feminina</strong><small>Cor, contraste e personalidade</small></button></div>
-          </div>
-          <div class="quiz-step" data-step="size" hidden>
-            <p class="quiz-question">Qual tamanho devemos considerar?</p>
-            <div class="quiz-sizes" role="group" aria-label="Tamanho para recomendação"><button type="button" data-answer="PP">PP</button><button type="button" data-answer="P">P</button><button type="button" data-answer="M">M</button><button type="button" data-answer="G">G</button><button type="button" data-answer="GG">GG</button></div>
-            <small class="quiz-disclaimer">O tamanho orienta a consulta. A disponibilidade será confirmada pela equipe.</small>
-          </div>
-          <div class="quiz-result" data-quiz-result hidden>
-            <p class="result-label">SEU MATCH</p><h3 data-result-title>Essencial com presença</h3><p data-result-copy></p><div class="result-looks" data-result-looks></div>
-            <div class="result-actions"><button class="button button-dark" type="button" data-add-recommendations>Adicionar os 3 à seleção</button><button class="text-button" type="button" data-restart-quiz>Refazer teste</button></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="store section" id="loja" aria-labelledby="store-title"><div class="store-copy reveal"><p class="kicker">03 / Também é experiência</p><h2 id="store-title">Prove. Combine.<br /><em>Faça ser seu.</em></h2><p>Se você está em São José dos Campos, venha conhecer a curadoria de perto e experimentar com calma.</p><dl><div><dt>Endereço</dt><dd>Rua Planura, 204<br />São José dos Campos — SP</dd></div><div><dt>Horários</dt><dd>Seg a sex: 09h às 18h<br />Sábado: 09h às 15h</dd></div></dl><div class="store-actions"><a class="text-link" href="https://www.google.com/maps/search/?api=1&query=Rua+Planura+204+S%C3%A3o+Jos%C3%A9+dos+Campos+SP" target="_blank" rel="noopener noreferrer">Abrir no mapa ↗</a><a class="text-link" data-fitting-whatsapp href="#" target="_blank" rel="noopener noreferrer">Combinar uma prova ↗</a></div></div><div class="store-images reveal"><img src="./assets/look-11-480.webp" srcset="./assets/look-11-480.webp 480w, ./assets/look-11-960.webp 960w" sizes="(max-width: 1000px) 90vw, 46vw" alt="Fachada da Closet Paula Miranda" loading="lazy" decoding="async" width="960" height="1280" /><img src="./assets/look-05-480.webp" srcset="./assets/look-05-480.webp 480w, ./assets/look-05-960.webp 960w" sizes="(max-width: 720px) 42vw, 22vw" alt="Interior da Closet Paula Miranda" loading="lazy" decoding="async" width="3072" height="4096" /><span>Rua Planura<br />nº 204</span></div></section>
-
-      <section class="final-cta" id="contato" aria-labelledby="final-title"><img src="./assets/look-02-960.webp" srcset="./assets/look-02-480.webp 480w, ./assets/look-02-960.webp 960w, ./assets/look-02-1440.webp 1440w" sizes="100vw" alt="Paula em frente à loja Closet Paula Miranda" loading="lazy" decoding="async" width="3103" height="4096" /><div class="final-overlay"></div><div class="final-content reveal"><p class="kicker kicker-light">Seu closet começa aqui</p><h2 id="final-title">Escolha com os olhos.<br /><em>Decida com confiança.</em></h2><div><button class="button button-light" type="button" data-open-selection>Finalizar minha seleção</button><a class="text-link text-link-light" href="https://www.instagram.com/closetpaulamiranda/" target="_blank" rel="noopener noreferrer">Ver Instagram ↗</a></div></div></section>
+      <section class="store section" id="loja" aria-labelledby="store-title"><div class="store-image reveal"><img src="./assets/look-11-960.webp" alt="Fachada da Closet Paula Miranda" loading="lazy" decoding="async" width="960" height="1280" /><span>São José<br />dos Campos</span></div><div class="store-copy reveal"><p class="eyebrow">Visite a gente</p><h2 id="store-title">Seu closet,<br /><em>bem de perto.</em></h2><p>Venha conhecer a curadoria e experimentar com calma na nossa loja.</p><dl><div><dt>Endereço</dt><dd>Rua Planura, 204<br />São José dos Campos — SP</dd></div><div><dt>Horários</dt><dd>Seg a sex: 09h às 18h<br />Sábado: 09h às 15h</dd></div></dl><div class="store-links"><a href="https://www.google.com/maps/search/?api=1&query=Rua+Planura+204+S%C3%A3o+Jos%C3%A9+dos+Campos+SP" target="_blank" rel="noopener noreferrer">Abrir no mapa ↗</a><a href="https://wa.me/5512997196086?text=Ol%C3%A1%21%20Gostaria%20de%20combinar%20um%20hor%C3%A1rio%20para%20conhecer%20a%20loja." target="_blank" rel="noopener noreferrer">Combinar uma visita ↗</a></div></div></section>
     </main>
 
-    <footer>
-      <div class="footer-main">
-        <div class="footer-brand"><small>Closet</small><strong>Paula Miranda</strong><span>Para mulheres autênticas e despojadas.</span><div class="footer-business"><span>Prévia privada — nenhuma contratação é concluída neste site</span><span>Atendimento via WhatsApp • (12) 99719-6086</span><span>Rua Planura, 204 • São José dos Campos — SP</span><span>Seg a sex, 09h às 18h • sáb, 09h às 15h</span></div></div>
-        <div class="footer-column"><p>Compre</p><a href="#novidades">Novidades</a><a href="#provador">Provador CPM</a><button type="button" data-open-selection>Minha seleção</button></div>
-        <div class="footer-column"><p>Redes e contato</p><a class="footer-whatsapp" href="https://wa.me/5512997196086" target="_blank" rel="noopener noreferrer">WhatsApp <span>· (12) 99719-6086</span></a><a href="https://www.instagram.com/closetpaulamiranda/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.facebook.com/people/Closet-Paula-Miranda/61557378347822/" target="_blank" rel="noopener noreferrer">Facebook</a></div>
-        <div class="footer-column footer-legal"><p>Informações</p><button type="button" data-open-legal="compra">Como funciona a compra</button><button type="button" data-open-legal="trocas">Trocas e arrependimento</button><button type="button" data-open-legal="privacidade">Privacidade</button></div>
-      </div>
-      <div class="footer-meta"><span>© <span data-year></span> Closet Paula Miranda</span><span>Desenvolvido por Felipe Lucena.</span></div>
-    </footer>
+    <footer><div class="footer-brand"><small>Closet</small><strong>Paula Miranda</strong><p>Para mulheres autênticas, elegantes e despojadas.</p></div><div class="footer-column"><h2>Explore</h2><button type="button" data-jump-category="vestidos">Vestidos</button><button type="button" data-jump-category="croppeds">Croppeds</button><button type="button" data-jump-category="blusas">Blusas</button><button type="button" data-jump-category="jeans">Jeans &amp; calças</button></div><div class="footer-column"><h2>Fale com a gente</h2><a href="https://wa.me/5512997196086" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://www.instagram.com/closetpaulamiranda/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.facebook.com/people/Closet-Paula-Miranda/61557378347822/" target="_blank" rel="noopener noreferrer">Facebook</a></div><div class="footer-bottom"><span>© <span data-year></span> Closet Paula Miranda</span><span>Desenvolvido por Felipe Lucena.</span><span>Vitrine em validação • valores sob consulta</span></div></footer>
 
-    <dialog class="product-dialog" data-product-dialog aria-labelledby="product-dialog-title">
-      <button class="product-dialog-close" type="button" data-close-product aria-label="Fechar detalhes">×</button>
-      <div class="product-dialog-media">
-        <img data-product-dialog-image alt="" width="640" height="853" />
-        <div class="product-gallery-controls" role="group" aria-label="Visualização da imagem"><button class="active" type="button" data-product-view="full" aria-pressed="true">Look completo</button><button type="button" data-product-view="detail" aria-pressed="false">Ver detalhes</button></div>
-        <span class="product-gallery-note" data-product-gallery-note>Imagem ampliada da peça</span>
-      </div>
-      <div class="product-dialog-copy">
-        <span data-product-dialog-code></span><h2 id="product-dialog-title" data-product-dialog-title></h2><p data-product-dialog-occasion></p>
-        <p class="product-dialog-description" data-product-dialog-description></p>
-        <div class="product-consult"><div><strong>Valor sob consulta</strong><span>Atendimento pelo WhatsApp</span></div><p>A equipe confirma valor e disponibilidade antes do pedido.</p></div>
-        <div class="product-dialog-size"><span>Seu tamanho mais comum</span><div role="group" aria-label="Tamanho para consulta"><button type="button" data-product-size="PP">PP</button><button type="button" data-product-size="P">P</button><button type="button" data-product-size="M">M</button><button type="button" data-product-size="G">G</button><button type="button" data-product-size="GG">GG</button></div><small>O tamanho é uma referência e não reserva a peça.</small></div>
-        <div class="product-accordions">
-          <details>
-            <summary>Sobre o look <span>+</span></summary>
-            <div><p data-product-dialog-about></p><dl><div><dt>Ocasiões</dt><dd data-product-dialog-categories></dd></div><div><dt>Proposta</dt><dd data-product-dialog-mood></dd></div></dl></div>
-          </details>
-          <details>
-            <summary>Guia de medidas <span>+</span></summary>
-            <div><p>Use uma fita métrica sem apertar o corpo. Meça o busto na parte mais larga, a cintura na parte mais estreita e o quadril na maior circunferência.</p><p class="product-data-note">A tabela exata pode variar conforme o fornecedor. Envie suas medidas para a equipe confirmar o tamanho e o caimento mais indicados.</p><a class="product-help-link" data-size-help-whatsapp href="#" target="_blank" rel="noopener noreferrer">Enviar minhas medidas no WhatsApp ↗</a></div>
-          </details>
-          <details>
-            <summary>Composição, cuidados e entrega <span>+</span></summary>
-            <div><p>Composição, instruções de lavagem e características da modelagem são confirmadas para a peça disponível no atendimento.</p><p>Você pode retirar na loja em São José dos Campos ou combinar o envio, prazo e eventual frete com a equipe antes de concluir o pedido.</p></div>
-          </details>
-        </div>
-        <div class="product-dialog-actions"><button class="button button-dark" type="button" data-product-dialog-add>Adicionar à seleção</button><a class="button button-whatsapp" data-product-dialog-whatsapp href="#" target="_blank" rel="noopener noreferrer">Consultar no WhatsApp ↗</a></div>
-        <button class="text-button product-policy-link" type="button" data-open-legal="trocas">Ver trocas e arrependimento</button>
-      </div>
-    </dialog>
+    <aside class="selection-drawer" data-selection-drawer aria-hidden="true" aria-labelledby="selection-title"><div class="drawer-head"><div><span>Sua sacola de ideias</span><h2 id="selection-title">Minha seleção</h2></div><button type="button" data-close-selection aria-label="Fechar seleção">×</button></div><div class="drawer-body"><div class="drawer-empty" data-selection-empty><span>♡</span><h3>Sua seleção está vazia</h3><p>Toque no coração das peças que você gostou.</p></div><div data-selection-items></div></div><div class="drawer-footer" data-selection-footer hidden><div class="drawer-size"><span>Seu tamanho mais comum</span><div role="group" aria-label="Escolha seu tamanho"><button type="button" data-size="PP">PP</button><button type="button" data-size="P">P</button><button type="button" data-size="M">M</button><button type="button" data-size="G">G</button><button type="button" data-size="GG">GG</button></div><small>A equipe confirma medidas e disponibilidade.</small></div><a class="button button-whatsapp" data-checkout href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Selecione o tamanho</a></div></aside>
+    <button class="drawer-backdrop" type="button" data-close-selection aria-label="Fechar seleção" hidden></button>
 
-    <dialog class="legal-dialog" data-legal-dialog aria-labelledby="legal-title">
-      <div class="legal-dialog-head"><div><span>Transparência</span><h2 id="legal-title">Informações importantes</h2></div><button type="button" data-close-legal aria-label="Fechar informações">×</button></div>
-      <div class="legal-dialog-body">
-        <section id="compra" data-legal-section><span>01</span><div><h3>Como funciona a compra</h3><p>Este site funciona como vitrine e organizador de preferências. A seleção não reserva peças nem conclui automaticamente uma compra.</p><p>Antes do pedido, a equipe confirma pelo WhatsApp as características da peça, tamanho, preço total, estoque, formas de pagamento, eventual frete e prazo de entrega ou retirada. O pedido só é concluído depois da apresentação dessas condições e da sua concordância.</p></div></section>
-        <section id="trocas" data-legal-section><span>02</span><div><h3>Trocas e direito de arrependimento</h3><div class="policy-rule"><strong>Trocas voluntárias</strong><p>Condições adicionais de troca por tamanho, cor ou preferência serão informadas pela equipe antes da contratação e registradas no comprovante. Essas condições complementam, sem restringir, os direitos previstos em lei.</p></div><div class="policy-rule"><strong>Vício ou defeito</strong><p>Solicitações relacionadas a vício ou defeito seguem integralmente os prazos e garantias previstos pelo Código de Defesa do Consumidor. A equipe orientará o procedimento e não limitará a garantia legal por uma política interna menor.</p></div><div class="policy-rule"><strong>Compras à distância</strong><p>Nas compras concluídas fora da loja, você pode exercer o direito de arrependimento em até 7 dias, contados da assinatura do contrato ou do recebimento do produto, conforme o art. 49 do Código de Defesa do Consumidor.</p></div><p>Para solicitar atendimento, fale com a loja pelo WhatsApp <a href="https://wa.me/5512997196086" target="_blank" rel="noopener noreferrer">(12) 99719-6086</a>. A equipe orientará o procedimento aplicável e registrará a solicitação.</p></div></section>
-        <section id="privacidade" data-legal-section><span>03</span><div><h3>Privacidade</h3><p>O site não possui formulário de cadastro, anúncios ou ferramenta externa de análise. Seus looks favoritos, tamanho e preferência de tema são guardados no armazenamento local deste navegador para manter sua experiência.</p><p>Como esta é uma prévia privada, o acesso é protegido pelo login seguro do ChatGPT. A loja não recebe sua senha nem suas credenciais do ChatGPT. A hospedagem pode manter registros técnicos necessários para segurança e funcionamento.</p><p>Ao tocar em “Consultar seleção no WhatsApp”, o site apenas prepara uma mensagem. Nada é enviado até você confirmar no WhatsApp; depois disso, o tratamento também segue as políticas do WhatsApp/Meta.</p><button class="text-button" type="button" data-clear-local-data>Apagar minha seleção e meu tamanho deste navegador</button></div></section>
-        <aside class="legal-note"><strong>Identificação e atendimento</strong><p>Closet Paula Miranda (nome fantasia) • Rua Planura, 204, São José dos Campos — SP • WhatsApp (12) 99719-6086.</p><p><strong>Dados obrigatórios antes da abertura pública:</strong> razão social, CPF/CNPJ e e-mail comercial devem ser fornecidos pelo responsável para substituir este aviso. Enquanto esses dados não forem confirmados, o site permanecerá privado e sem contratação direta.</p><p>Referências: <a href="https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/decreto/d7962.htm" target="_blank" rel="noopener noreferrer">Decreto do comércio eletrônico</a>, <a href="https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm" target="_blank" rel="noopener noreferrer">Código de Defesa do Consumidor</a> e <a href="https://www.gov.br/anpd/pt-br/acesso-a-informacao/perguntas-frequentes" target="_blank" rel="noopener noreferrer">orientações da ANPD</a>.</p></aside>
-      </div>
-    </dialog>
-
-    <aside class="selection-drawer" data-selection-drawer role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="selection-title" tabindex="-1"><div class="drawer-backdrop" data-close-selection></div><div class="drawer-panel"><div class="drawer-head"><div><span>SUA CURADORIA</span><h2 id="selection-title">Minha seleção</h2></div><button type="button" data-close-selection aria-label="Fechar seleção">×</button></div><div class="drawer-empty" data-selection-empty><strong>Ainda está escolhendo?</strong><p>Toque no coração dos looks para guardar seus favoritos aqui.</p><button class="text-button" type="button" data-close-selection>Explorar novidades</button></div><div class="drawer-items" data-selection-items></div><div class="drawer-footer" data-selection-footer hidden><div class="drawer-size"><span>Qual tamanho devemos consultar?</span><div role="group" aria-label="Tamanho da seleção"><button type="button" data-drawer-size="PP">PP</button><button type="button" data-drawer-size="P">P</button><button type="button" data-drawer-size="M">M</button><button type="button" data-drawer-size="G">G</button><button type="button" data-drawer-size="GG">GG</button></div></div><div class="drawer-service-notes"><span>✓ Valor e estoque confirmados antes do pedido</span><span>✓ Retirada na loja ou envio combinado</span><span>✓ Dúvidas de tamanho atendidas no WhatsApp</span></div><a class="button button-whatsapp is-disabled" data-checkout href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Selecione o tamanho</a></div></div></aside>
-    <button class="mobile-selection" type="button" data-open-selection hidden><span>Revisar minha seleção</span><b data-selection-count>0</b></button><div class="toast" role="status" aria-live="polite" data-toast></div>
+    <dialog class="product-dialog" data-product-dialog aria-labelledby="product-title"><button class="dialog-close" type="button" data-close-product aria-label="Fechar detalhes">×</button><div class="dialog-media"><img data-product-image alt="" width="960" height="1280" /><span data-product-tag></span></div><div class="dialog-copy"><p class="eyebrow" data-product-category></p><h2 id="product-title" data-product-title></h2><p class="product-description" data-product-description></p><strong class="consult-price">Valor sob consulta</strong><div class="dialog-size"><span>Seu tamanho mais comum</span><div role="group" aria-label="Escolha seu tamanho"><button type="button" data-size="PP">PP</button><button type="button" data-size="P">P</button><button type="button" data-size="M">M</button><button type="button" data-size="G">G</button><button type="button" data-size="GG">GG</button></div></div><div class="dialog-actions"><button class="button button-dark" type="button" data-product-toggle>Adicionar à seleção</button><a class="button button-whatsapp" data-product-whatsapp href="#" target="_blank" rel="noopener noreferrer">Consultar no WhatsApp ↗</a></div><small>Esta vitrine não reserva nem conclui pedidos. A equipe confirma os detalhes antes da compra.</small></div></dialog>
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
   </body>
 </html>

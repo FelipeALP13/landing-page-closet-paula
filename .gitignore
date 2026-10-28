@@ -2,3 +2,6 @@
 .sttdeps/
 .venv-stt/
 transcribe_audio.py
+preview-*.png
+preview_test.js
+outputs/
