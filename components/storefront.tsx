@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { categories, getCategory } from "@/lib/categories";
 import type { StoreContent, StoreProduct } from "@/lib/store-data";
 
@@ -72,8 +72,14 @@ export function Storefront({ content, products, mode, categorySlug }: Props) {
     ? `Olá! Fiz a Curadoria CPM e recebi estas recomendações:\n${recommendations.map((product, index) => `${index + 1}. ${product.name} (${product.sku})`).join("\n")}\n\nEu procuro ${quizCategories[quiz.category]} para ${quizOccasions[quiz.occasion]}. Meu tamanho mais comum é ${quiz.size}. Gostaria de confirmar valores e disponibilidade.`
     : "";
 
+  const themeStyle = {
+    "--rose": content.themeAccent,
+    "--paper": content.themeBackground,
+    "--sand": content.themeSurface,
+  } as CSSProperties;
+
   return (
-    <div className="site-shell">
+    <div className="site-shell" style={themeStyle}>
       <div className="announcement">{content.announcement}</div>
       <header className="header">
         <button className="menu-trigger" onClick={() => setMenuOpen(true)} aria-label="Abrir menu"><span /><span /></button>
@@ -108,7 +114,15 @@ export function Storefront({ content, products, mode, categorySlug }: Props) {
         <section className="store" id="loja"><img src="/assets/look-11-960.webp" alt="Fachada da Closet Paula Miranda" /><div><p className="eyebrow">Visite a gente</p><h2>Seu closet,<br /><em>bem de perto.</em></h2><p>Rua Planura, 204 — São José dos Campos, SP</p><p>Seg a sex: 09h às 18h<br />Sábado: 09h às 15h</p><a href={whatsappBase} target="_blank" rel="noreferrer">Combinar uma visita ↗</a></div></section>
       </main>
 
-      <footer><div className="footer-brand"><small>Closet</small><strong>Paula Miranda</strong><p>Para mulheres autênticas, elegantes e despojadas.</p></div><nav>{categories.slice(0,4).map(item => <a key={item.slug} href={`/categoria/${item.slug}`}>{item.label}</a>)}</nav><nav><a href="/conta">Minha conta</a><a href={whatsappBase}>WhatsApp</a><a href="https://www.instagram.com/closetpaulamiranda/">Instagram</a></nav></footer>
+      <footer className="site-footer">
+        <div className="footer-main">
+          <div className="footer-brand"><small>Closet</small><strong>Paula Miranda</strong><p>Para mulheres autênticas, elegantes e despojadas.</p><a className="footer-whatsapp" href={whatsappBase} target="_blank" rel="noreferrer">Falar com a equipe ↗</a></div>
+          <nav><h2>Compre</h2>{categories.map(item => <a key={item.slug} href={`/categoria/${item.slug}`}>{item.label}</a>)}</nav>
+          <nav><h2>Atendimento</h2><a href="/#curadoria">Curadoria CPM</a><a href="/conta">Minha conta</a><a href={whatsappBase} target="_blank" rel="noreferrer">WhatsApp</a><a href="https://www.instagram.com/closetpaulamiranda/" target="_blank" rel="noreferrer">Instagram</a><a href="https://www.facebook.com/people/Closet-Paula-Miranda/61557378347822/" target="_blank" rel="noreferrer">Facebook</a></nav>
+          <div className="footer-store"><h2>Visite a loja</h2><p>Rua Planura, 204<br />São José dos Campos — SP</p><p>Seg a sex: 09h às 18h<br />Sábado: 09h às 15h</p><a href="https://www.google.com/maps/search/?api=1&query=Rua+Planura+204+S%C3%A3o+Jos%C3%A9+dos+Campos+SP" target="_blank" rel="noreferrer">Abrir no mapa ↗</a></div>
+        </div>
+        <div className="footer-bottom"><span>© {new Date().getFullYear()} Closet Paula Miranda</span><span>Vitrine online • Valores e disponibilidade sob consulta</span><span className="developer-credit">Desenvolvido por Felipe Lucena</span></div>
+      </footer>
 
       <div className={`selection-backdrop ${selectionOpen ? "open" : ""}`} onClick={() => setSelectionOpen(false)} />
       <aside className={`selection-drawer ${selectionOpen ? "open" : ""}`}><header><div><small>Sua sacola de ideias</small><h2>Minha seleção</h2></div><button onClick={() => setSelectionOpen(false)}>×</button></header><div className="selection-items">{selectedProducts.length ? selectedProducts.map(product => <article key={product.id}><img src={product.imageUrl} alt="" /><div><strong>{product.name}</strong><small>{product.sku}</small></div><button onClick={() => toggleProduct(product.id)}>×</button></article>) : <div className="selection-empty"><span>♡</span><h3>Sua seleção está vazia</h3><p>Toque no coração das peças que você gostou.</p></div>}</div>{selectedProducts.length > 0 && <div className="selection-footer"><span>Seu tamanho mais comum</span><div>{["PP","P","M","G","GG"].map(value => <button className={size === value ? "active" : ""} key={value} onClick={() => setSize(value)}>{value}</button>)}</div><a className={`button whatsapp ${!size ? "disabled" : ""}`} href={size ? `${whatsappBase}?text=${encodeURIComponent(checkoutMessage)}` : "#"} target={size ? "_blank" : undefined} rel="noreferrer">{size ? "Consultar no WhatsApp ↗" : "Selecione o tamanho"}</a></div>}</aside>

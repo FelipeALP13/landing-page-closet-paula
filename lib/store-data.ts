@@ -10,6 +10,9 @@ export type StoreContent = {
   curadoriaTitle: string;
   curadoriaDescription: string;
   announcement: string;
+  themeAccent: string;
+  themeBackground: string;
+  themeSurface: string;
 };
 
 export type StoreProduct = {
@@ -34,7 +37,25 @@ export const defaultContent: StoreContent = {
   curadoriaTitle: "Conte o que você procura. A gente monta o caminho.",
   curadoriaDescription: "Em menos de um minuto, descubra as peças da coleção que mais combinam com seu pedido.",
   announcement: "Atendimento personalizado pelo WhatsApp • Retire em São José dos Campos • Envio combinado com a equipe",
+  themeAccent: "#d6a2aa",
+  themeBackground: "#f8f5ef",
+  themeSurface: "#e8dfd1",
 };
+
+const adminEditableContentKeys = new Set<keyof StoreContent>([
+  "heroEyebrow",
+  "heroTitle",
+  "heroAccent",
+  "heroDescription",
+  "curadoriaTitle",
+  "curadoriaDescription",
+  "announcement",
+  "themeAccent",
+  "themeBackground",
+  "themeSurface",
+]);
+
+const colorContentKeys = new Set<keyof StoreContent>(["themeAccent", "themeBackground", "themeSurface"]);
 
 export const defaultProducts: StoreProduct[] = [
   { id: "cacau", sku: "CPM-01", name: "Conjunto Cacau & Areia", category: "conjuntos", tag: "Look completo", description: "Uma composição feminina em tons terrosos para um visual marcante.", imageUrl: "/assets/look-01-960.webp", keywords: "marrom bege saia conjunto", occasions: ["dia", "especial"], sortOrder: 1, active: true },
@@ -72,9 +93,10 @@ export async function getStoreData(): Promise<{ content: StoreContent; products:
 export async function saveContent(values: Partial<StoreContent>, userId: string) {
   const db = getDb();
   const now = new Date().toISOString();
-  const allowed = new Set(Object.keys(defaultContent));
   for (const [key, value] of Object.entries(values)) {
-    if (!allowed.has(key) || typeof value !== "string") continue;
+    const typedKey = key as keyof StoreContent;
+    if (!adminEditableContentKeys.has(typedKey) || typeof value !== "string") continue;
+    if (colorContentKeys.has(typedKey) && !/^#[0-9a-fA-F]{6}$/.test(value)) continue;
     await db.insert(siteContent).values({ key, value: value.slice(0, 600), updatedAt: now, updatedBy: userId })
       .onConflictDoUpdate({ target: siteContent.key, set: { value: value.slice(0, 600), updatedAt: now, updatedBy: userId } });
   }
