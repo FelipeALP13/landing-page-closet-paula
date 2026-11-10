@@ -2,24 +2,31 @@ import Link from "next/link";
 import { isExternalLink } from "@/lib/campaign";
 import { getCategory } from "@/lib/categories";
 import type { StoreProduct } from "@/lib/store-data";
-import { formatPrice, productPath, whatsappLink } from "@/lib/store-info";
+import { priceView, productBadge, productPath, productWhatsappMessage, whatsappLink, type PriceView } from "@/lib/store-info";
 
-type ProductCardProps = { product: StoreProduct; selected: boolean; onToggle: (id: string) => void; sizes: string; whatsappNumber: string };
+type ProductCardProps = { product: StoreProduct; selected: boolean; onToggle: (id: string) => void; sizes: string; whatsappNumber: string; showPrices: boolean };
 
-export function ProductCard({ product, selected, onToggle, sizes, whatsappNumber }: ProductCardProps) {
+export function ProductCard({ product, selected, onToggle, sizes, whatsappNumber, showPrices }: ProductCardProps) {
+  const badge = productBadge(product);
   return (
-    <article className="product-card">
+    <article className={`product-card${product.soldOut ? " sold-out" : ""}`}>
       <div>
         <Link href={productPath(product.id)} className="product-card-image" tabIndex={-1} aria-hidden="true"><ResponsiveImage src={product.imageUrl} sizes={sizes} alt="" /></Link>
-        <span>{product.tag}</span>
+        {badge && <span className={badge.className}>{badge.text}</span>}
         <button onClick={() => onToggle(product.id)} aria-pressed={selected} aria-label={`${selected ? "Remover" : "Adicionar"} ${product.name} ${selected ? "da" : "à"} seleção`}>{selected ? "♥" : "♡"}</button>
       </div>
       <small>{getCategory(product.category)?.label}</small>
       <h3><Link href={productPath(product.id)}>{product.name}</Link></h3>
-      <p>{formatPrice(product.price)}</p>
-      <a data-track-product={product.id} href={whatsappLink(whatsappNumber, `Olá! Gostei de uma peça no site: ${product.name} (${product.sku}). Poderia me informar ${product.price ? "" : "o valor, "}as medidas e se ela está disponível?`)} target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <ExternalArrow /></a>
+      <PriceTag view={priceView(product, showPrices)} />
+      <a data-track-product={product.id} href={whatsappLink(whatsappNumber, productWhatsappMessage(product, showPrices))} target="_blank" rel="noopener noreferrer">{product.soldOut ? "Avise-me quando voltar" : "Consultar no WhatsApp"} <ExternalArrow /></a>
     </article>
   );
+}
+
+// Preço (ou "Valor sob consulta"). Na promoção com preços visíveis, mostra "de" riscado e "por".
+export function PriceTag({ view, className = "" }: { view: PriceView; className?: string }) {
+  if (!view.original) return <p className={className}>{view.current}</p>;
+  return <p className={`${className} price-sale`}><s aria-label={`De ${view.original}`}>{view.original}</s> <strong aria-label={`por ${view.current}`}>{view.current}</strong></p>;
 }
 
 type CampaignProps = { title: string; text: string; button: string; link: string; image: string };

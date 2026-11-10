@@ -33,6 +33,8 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
 
   // Dados da loja (WhatsApp, endereço, horários…) vêm do painel.
   const info = resolveStoreInfo(content);
+  // Preços só aparecem se a dona ligar "Mostrar preços no site" no painel.
+  const showPrices = content.showPrices === "1";
   const wa = (message?: string) => whatsappLink(info.whatsappNumber, message);
 
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -168,7 +170,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
     const ranked = products.map((product, index) => ({
       product,
       index,
-      score: ((next.category === "tops" ? ["croppeds", "blusas"].includes(product.category) : product.category === next.category) ? 8 : 0) + (product.occasions.includes(next.occasion) ? 4 : 0),
+      score: ((next.category === "tops" ? ["croppeds", "blusas"].includes(product.category) : product.category === next.category) ? 8 : 0) + (product.occasions.includes(next.occasion) ? 4 : 0) - (product.soldOut ? 20 : 0),
     })).sort((a, b) => b.score - a.score || a.index - b.index).slice(0, 3).map(item => item.product);
     setRecommendations(ranked);
     setQuizStep(3);
@@ -236,13 +238,13 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
         )}
 
         {mode === "product" && currentProduct && (
-          <ProductDetail product={currentProduct} related={relatedProducts} selectedIds={selected} onToggle={toggleProduct} preferredSize={size} origin={origin} whatsappNumber={info.whatsappNumber} />
+          <ProductDetail product={currentProduct} related={relatedProducts} selectedIds={selected} onToggle={toggleProduct} preferredSize={size} origin={origin} whatsappNumber={info.whatsappNumber} showPrices={showPrices} />
         )}
 
         {mode === "info" && <InfoContent info={info} onClearData={clearLocalData} dataCleared={dataCleared} />}
 
         {(mode === "home" || mode === "category") && (
-          <section className="products-section" id="vitrine"><div className="section-head"><div><p className="eyebrow">Vitrine CPM</p><h2>{productsTitle}</h2></div><p>{productsDescription}</p></div>{visibleProducts.length ? <div className="product-grid">{visibleProducts.map(product => <ProductCard key={product.id} whatsappNumber={info.whatsappNumber} product={product} selected={selected.includes(product.id)} onToggle={toggleProduct} sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw" />)}</div> : query ? <div className="empty-category"><span aria-hidden="true">✦</span><h3>Nada encontrado</h3><p>Não encontramos peças para essa busca. Tente outra palavra ou peça ajuda para a equipe.</p><button className="button dark" onClick={() => setSearch("")}>Limpar busca</button></div> : <div className="empty-category"><span aria-hidden="true">✦</span><h3>Novidades chegando</h3><p>Esta categoria já está preparada. Enquanto as fotos não chegam, a equipe pode mostrar as opções disponíveis pelo WhatsApp.</p><a className="button whatsapp" href={wa(`Olá! Gostaria de ver as opções disponíveis em ${category?.label}.`)} target="_blank" rel="noopener noreferrer">Ver opções no WhatsApp <ExternalArrow /></a></div>}</section>
+          <section className="products-section" id="vitrine"><div className="section-head"><div><p className="eyebrow">Vitrine CPM</p><h2>{productsTitle}</h2></div><p>{productsDescription}</p></div>{visibleProducts.length ? <div className="product-grid">{visibleProducts.map(product => <ProductCard key={product.id} whatsappNumber={info.whatsappNumber} showPrices={showPrices} product={product} selected={selected.includes(product.id)} onToggle={toggleProduct} sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw" />)}</div> : query ? <div className="empty-category"><span aria-hidden="true">✦</span><h3>Nada encontrado</h3><p>Não encontramos peças para essa busca. Tente outra palavra ou peça ajuda para a equipe.</p><button className="button dark" onClick={() => setSearch("")}>Limpar busca</button></div> : <div className="empty-category"><span aria-hidden="true">✦</span><h3>Novidades chegando</h3><p>Esta categoria já está preparada. Enquanto as fotos não chegam, a equipe pode mostrar as opções disponíveis pelo WhatsApp.</p><a className="button whatsapp" href={wa(`Olá! Gostaria de ver as opções disponíveis em ${category?.label}.`)} target="_blank" rel="noopener noreferrer">Ver opções no WhatsApp <ExternalArrow /></a></div>}</section>
         )}
 
         {mode !== "info" && (

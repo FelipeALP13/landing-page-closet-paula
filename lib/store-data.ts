@@ -1,6 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { productDetails as productDetailsTable, products as productsTable, siteContent } from "@/db/schema";
+import { productDetails as productDetailsTable, productStatus as productStatusTable, products as productsTable, siteContent } from "@/db/schema";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { isSafeLink, sanitizeAnnouncements } from "@/lib/campaign";
 import { isSiteImage } from "@/lib/site-image";
@@ -29,6 +29,7 @@ export type StoreContent = {
   campaignImage: string;
   campaignStart: string; // AAAA-MM-DD ou vazio
   campaignEnd: string;
+  showPrices: string; // "1" = mostra preços; vazio = "Valor sob consulta"
 } & { [key: `cat_${string}`]: string } & Record<StoreInfoKey, string>;
 
 export type StoreProduct = {
@@ -51,10 +52,17 @@ export type ProductExtras = {
   sizes: string[];
   gallery: string[];
   details: string;
+} & ProductStatus;
+
+// Promoção e esgotado (tabela product_status).
+export type ProductStatus = {
+  onSale: boolean;
+  salePrice: string;
+  soldOut: boolean;
 };
 
-
-const emptyExtras: ProductExtras = { price: "", sizes: [], gallery: [], details: "" };
+const emptyStatus: ProductStatus = { onSale: false, salePrice: "", soldOut: false };
+const emptyExtras: ProductExtras = { price: "", sizes: [], gallery: [], details: "", ...emptyStatus };
 
 export const defaultContent: StoreContent = {
   heroEyebrow: "Coleção Paula Miranda",
@@ -79,6 +87,7 @@ export const defaultContent: StoreContent = {
   campaignImage: "/assets/look-03-960.webp",
   campaignStart: "",
   campaignEnd: "",
+  showPrices: "",
   ...storeInfoDefaults,
   ...Object.fromEntries(categories.flatMap(category => [
     [categoryImageKey(category.slug), category.image],
@@ -110,6 +119,7 @@ const adminEditableContentKeys = new Set<string>([
   "campaignImage",
   "campaignStart",
   "campaignEnd",
+  "showPrices",
   ...storeInfoKeys,
   ...categories.flatMap(category => [categoryImageKey(category.slug), categoryDescriptionKey(category.slug)]),
 ]);
@@ -124,6 +134,7 @@ function sanitizeContentValue(key: string, value: string): string | null {
   if (imageContentKeys.has(key)) return isSiteImage(value) ? value : null;
   if (key === "announcements") return sanitizeAnnouncements(value);
   if (key === "campaignEnabled") return value === "1" ? "1" : "";
+  if (key === "showPrices") return value === "1" ? "1" : "";
   if (key === "campaignStart" || key === "campaignEnd") return value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
   if (key === "campaignLink") return value === "" || isSafeLink(value) ? value.slice(0, 300) : null;
   return value.slice(0, 600);
@@ -160,10 +171,14 @@ export async function getStoreData({ includeInactive = false } = {}): Promise<{ 
     for (const row of productRows) {
       productMap.set(row.id, { ...row, ...emptyExtras, occasions: parseList(row.occasions) });
     }
-    const extras = await getProductExtras();
+    const [extras, statuses] = await Promise.all([getProductExtras(), getProductStatuses()]);
     for (const [id, extra] of extras) {
       const product = productMap.get(id);
       if (product) productMap.set(id, { ...product, ...extra });
+    }
+    for (const [id, status] of statuses) {
+      const product = productMap.get(id);
+      if (product) productMap.set(id, { ...product, ...status });
     }
     const products = [...productMap.values()].filter(product => includeInactive || product.active).sort((a, b) => a.sortOrder - b.sortOrder);
     return { content, products };
@@ -205,6 +220,11 @@ export async function deleteProduct(id: string) {
   } catch (error) {
     console.error("Product details not deleted", error);
   }
+  try {
+    await db.delete(productStatusTable).where(eq(productStatusTable.productId, id));
+  } catch (error) {
+    console.error("Product status not deleted", error);
+  }
 }
 
 // Devolve as chaves recusadas (valor inválido), para o painel avisar a dona.
@@ -224,13 +244,25 @@ export async function saveContent(values: Partial<StoreContent>, userId: string)
 
 // Separa os campos da tabela products dos campos da tabela product_details.
 function splitProduct(product: StoreProduct) {
-  const { price, sizes, gallery, details, ...core } = product;
-  return { core, extras: { price, sizes, gallery, details } };
+  const { price, sizes, gallery, details, onSale, salePrice, soldOut, ...core } = product;
+  return { core, extras: { price, sizes, gallery, details }, status: { onSale, salePrice, soldOut } };
+}
+
+// Lê a tabela product_status. Se ela ainda não existir, as peças ficam sem selo de promoção/esgotado.
+async function getProductStatuses(): Promise<Map<string, ProductStatus>> {
+  const statuses = new Map<string, ProductStatus>();
+  try {
+    const rows = await getDb().select().from(productStatusTable);
+    for (const row of rows) statuses.set(row.productId, { onSale: row.onSale, salePrice: row.salePrice, soldOut: row.soldOut });
+  } catch (error) {
+    console.error("Product status unavailable", error);
+  }
+  return statuses;
 }
 
 // Lê a tabela product_details. Se ela ainda não existir no banco, devolve vazio e a loja segue normal.
-async function getProductExtras(): Promise<Map<string, ProductExtras>> {
-  const extras = new Map<string, ProductExtras>();
+async function getProductExtras(): Promise<Map<string, Omit<ProductExtras, keyof ProductStatus>>> {
+  const extras = new Map<string, Omit<ProductExtras, keyof ProductStatus>>();
   try {
     const rows = await getDb().select().from(productDetailsTable);
     for (const row of rows) {
@@ -256,20 +288,29 @@ export async function getProduct(id: string) {
   return { product: products.find(product => product.id === id), products, content };
 }
 
-// Devolve false se só os dados principais foram salvos (tabela product_details indisponível).
+// Devolve false se só os dados principais foram salvos (tabelas product_details/product_status indisponíveis).
 export async function saveProduct(product: StoreProduct, userId: string): Promise<boolean> {
   const db = getDb();
   const now = new Date().toISOString();
-  const { core, extras } = splitProduct(product);
+  const { core, extras, status } = splitProduct(product);
   const coreValues = { ...core, occasions: JSON.stringify(core.occasions), updatedAt: now, updatedBy: userId };
   await db.insert(productsTable).values(coreValues).onConflictDoUpdate({ target: productsTable.id, set: coreValues });
+  let allSaved = true;
   try {
     const extraValues = { ...extras, sizes: JSON.stringify(extras.sizes), gallery: JSON.stringify(extras.gallery), updatedAt: now, updatedBy: userId };
     await db.insert(productDetailsTable).values({ productId: product.id, ...extraValues })
       .onConflictDoUpdate({ target: productDetailsTable.productId, set: extraValues });
-    return true;
   } catch (error) {
     console.error("Product details not saved", error);
-    return false;
+    allSaved = false;
   }
+  try {
+    const statusValues = { ...status, updatedAt: now, updatedBy: userId };
+    await db.insert(productStatusTable).values({ productId: product.id, ...statusValues })
+      .onConflictDoUpdate({ target: productStatusTable.productId, set: statusValues });
+  } catch (error) {
+    console.error("Product status not saved", error);
+    allSaved = false;
+  }
+  return allSaved;
 }

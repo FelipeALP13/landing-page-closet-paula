@@ -19,6 +19,16 @@ export const productDetails = sqliteTable("product_details", {
   updatedBy: text("updated_by").notNull(),
 });
 
+// Promoção e esgotado de cada peça. Tabela própria: se ainda não existir, só esses selos somem.
+export const productStatus = sqliteTable("product_status", {
+  productId: text("product_id").primaryKey(),
+  onSale: integer("on_sale", { mode: "boolean" }).notNull().default(false),
+  salePrice: text("sale_price").notNull().default(""),
+  soldOut: integer("sold_out", { mode: "boolean" }).notNull().default(false),
+  updatedAt: text("updated_at").notNull(),
+  updatedBy: text("updated_by").notNull(),
+});
+
 // Contagem anônima de toques nos botões de WhatsApp, por peça e por dia (product_id "" = contato geral).
 // Não guarda nada sobre quem clicou.
 export const whatsappClicks = sqliteTable("whatsapp_clicks", {

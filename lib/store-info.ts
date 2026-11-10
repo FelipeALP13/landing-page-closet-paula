@@ -151,6 +151,36 @@ export function parsePrice(price: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
+type MessageProduct = { name: string; sku: string; price: string; onSale: boolean; salePrice: string; soldOut: boolean };
+
+// Mensagem pronta do WhatsApp para uma peça: normal, em promoção ou esgotada.
+export function productWhatsappMessage(product: MessageProduct, showPrices: boolean, extra = "") {
+  const piece = `${product.name} (${product.sku})${extra}`;
+  if (product.soldOut) return `Olá! Vi no site que a peça ${piece} está esgotada. Pode me avisar quando ela voltar?`;
+  if (product.onSale && (!showPrices || !product.salePrice.trim())) return `Olá! Vi no site que a peça ${piece} está em promoção. Qual é o valor promocional e ela está disponível?`;
+  const askPrice = !showPrices || !product.price.trim();
+  return `Olá! Gostei de uma peça no site: ${piece}. Poderia me informar ${askPrice ? "o valor, " : ""}as medidas e se ela está disponível?`;
+}
+
+// Selo da foto: "Esgotado" e "Promoção" têm prioridade sobre a chamada escrita no painel.
+export function productBadge(product: { tag: string; onSale: boolean; soldOut: boolean }) {
+  if (product.soldOut) return { text: "Esgotado", className: "badge-sold-out" };
+  if (product.onSale) return { text: "Promoção", className: "badge-on-sale" };
+  return product.tag ? { text: product.tag, className: "" } : null;
+}
+
+export type PriceView = { current: string; original?: string };
+
+// O que a cliente vê no lugar do preço. Com "Mostrar preços" desligado, é sempre "Valor sob consulta".
+// Em promoção com preço promocional, mostra "de" (riscado) e "por".
+export function priceView(product: { price: string; onSale: boolean; salePrice: string }, showPrices: boolean): PriceView {
+  if (!showPrices) return { current: "Valor sob consulta" };
+  if (product.onSale && product.salePrice.trim()) {
+    return { current: formatPrice(product.salePrice), original: product.price.trim() ? formatPrice(product.price) : undefined };
+  }
+  return { current: formatPrice(product.price) };
+}
+
 // Preço como a cliente vê. Valores numéricos viram "R$ 189,90"; textos livres aparecem como foram escritos.
 export function formatPrice(price: string) {
   const trimmed = price.trim();

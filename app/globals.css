@@ -229,3 +229,23 @@
 .store-info-form .button{grid-column:1/-1}
 .admin-warning{margin-top:14px;padding:12px;border-left:3px solid #b3261e;background:#fbeeed;color:#6b1a14;font-size:13px}
 @media(max-width:680px){.store-info-form{grid-template-columns:1fr}}
+
+/* Promoção e esgotado */
+.product-card>div span.badge-on-sale,.product-main-photo>span.badge-on-sale{background:#b3261e;color:#fff}
+.product-card>div span.badge-sold-out,.product-main-photo>span.badge-sold-out{background:#111;color:#fff}
+.product-card.sold-out>div img{filter:grayscale(.65);opacity:.75}
+.price-sale s{color:var(--muted);font-weight:400}
+.price-sale strong{color:#b3261e;font-weight:800}
+:root[data-theme=dark] .price-sale strong{color:#ff8a80}
+.product-price.price-sale strong{font-weight:400}
+
+/* Painel: mostrar preços, promoção e esgotado */
+.show-prices-toggle{margin-top:18px;padding:14px;display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid #ddd;cursor:pointer}
+.show-prices-toggle input{margin-top:3px;width:18px;height:18px}
+.show-prices-toggle span{display:flex;flex-direction:column;gap:4px}
+.show-prices-toggle strong{font-size:13px}
+.show-prices-toggle small{color:#706963;font-size:12px}
+.admin-status-flags{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end;padding:12px;background:#f7f3ee;border:1px solid #e5ded5}
+.admin-status-flags>label{flex-direction:row!important;align-items:center;gap:6px!important;font-size:13px;font-weight:700}
+.admin-status-flags>label input[type=checkbox]{width:auto}
+.admin-status-flags>label.sale-price{flex-direction:column!important;align-items:stretch;min-width:180px}

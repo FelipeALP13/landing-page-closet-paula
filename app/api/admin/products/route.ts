@@ -31,6 +31,9 @@ export async function PUT(request: Request) {
     sizes: Array.isArray(product.sizes) ? productSizes.filter(size => product.sizes!.includes(size)) : [],
     gallery: Array.isArray(product.gallery) ? product.gallery.filter(isSiteImage).slice(0, 8) : [],
     details: String(product.details ?? "").slice(0, 2000),
+    onSale: Boolean(product.onSale),
+    salePrice: String(product.salePrice ?? "").trim().slice(0, 40),
+    soldOut: Boolean(product.soldOut),
   }, user.userId);
   return NextResponse.json({ ok: true, detailsSaved });
 }

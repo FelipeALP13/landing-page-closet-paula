@@ -77,6 +77,13 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
     setStatus(rejected.length ? "Alguns dados não foram aceitos. Confira os campos e tente de novo." : "Dados da loja atualizados em todo o site.");
   }
 
+  async function toggleShowPrices(show: boolean) {
+    const value = show ? "1" : "";
+    setContent(current => ({ ...current, showPrices: value }));
+    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ showPrices: value }) });
+    setStatus(!response.ok ? "Não foi possível salvar a opção de preços." : show ? "Preços visíveis no site." : "Preços ocultos: o site mostra \"Valor sob consulta\".");
+  }
+
   async function saveCampaign(event: React.FormEvent) {
     event.preventDefault();
     if (content.campaignLink && !isSafeLink(content.campaignLink)) { setStatus("O link do botão não é válido. Use um endereço que comece com https:// ou com / (página do site)."); return; }
@@ -189,7 +196,7 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
     const product: StoreProduct = {
       id, sku: `CPM-${String(nextSku).padStart(2, "0")}`, name: "", category: categories[0].slug, tag: "Novidade",
       description: "", imageUrl: "", keywords: "", occasions: ["dia", "especial"], sortOrder: 0, active: true,
-      price: "", sizes: [], gallery: [], details: "",
+      price: "", sizes: [], gallery: [], details: "", onSale: false, salePrice: "", soldOut: false,
     };
     // Peças novas entram no topo: aparecem primeiro na vitrine.
     setProducts(current => [product, ...current]);
@@ -266,6 +273,10 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           <p className="eyebrow">02 / Catálogo</p><h2>Peças</h2>
           <p className="admin-help">A ordem desta lista é a ordem da vitrine. As {featuredCount} primeiras peças visíveis aparecem em Destaques na página inicial.</p>
           <button className="button dark admin-add" type="button" onClick={addProduct}>+ Nova peça</button>
+          <label className="show-prices-toggle">
+            <input type="checkbox" checked={content.showPrices === "1"} onChange={event => toggleShowPrices(event.target.checked)} />
+            <span><strong>Mostrar preços no site</strong><small>{content.showPrices === "1" ? "Os preços cadastrados aparecem na vitrine." : "Desligado: todas as peças mostram \"Valor sob consulta\" e o valor é passado pelo WhatsApp."}</small></span>
+          </label>
         </div>
         <div className="admin-products">{products.map((product, index) => {
           const unsaved = isUnsaved(product.id);
@@ -286,7 +297,12 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
                 <label><span>Nome</span><input value={product.name} placeholder="Ex.: Vestido Floral Midi" onChange={event => updateProduct(product.id, "name", event.target.value)} /></label>
                 <label><span>Categoria</span><select value={product.category} onChange={event => updateProduct(product.id, "category", event.target.value)}>{categories.map(category => <option key={category.slug} value={category.slug}>{category.label}</option>)}</select></label>
                 <label><span>Chamada</span><input value={product.tag} onChange={event => updateProduct(product.id, "tag", event.target.value)} /></label>
-                <label><span>Preço</span><input value={product.price} placeholder="Ex.: 189,90 (vazio = sob consulta)" onChange={event => updateProduct(product.id, "price", event.target.value)} /></label>
+                <label><span>Preço{content.showPrices !== "1" && " (oculto no site)"}</span><input value={product.price} placeholder="Ex.: 189,90 (vazio = sob consulta)" onChange={event => updateProduct(product.id, "price", event.target.value)} /></label>
+                <div className="wide admin-status-flags">
+                  <label><input type="checkbox" checked={product.onSale} onChange={event => updateProduct(product.id, "onSale", event.target.checked)} /><span>Em promoção</span></label>
+                  {product.onSale && <label className="sale-price"><span>Preço promocional {content.showPrices !== "1" && "(oculto no site)"}</span><input value={product.salePrice} placeholder="Ex.: 149,90" onChange={event => updateProduct(product.id, "salePrice", event.target.value)} /></label>}
+                  <label><input type="checkbox" checked={product.soldOut} onChange={event => updateProduct(product.id, "soldOut", event.target.checked)} /><span>Esgotada (botão vira “Avise-me quando voltar”)</span></label>
+                </div>
                 <fieldset className="admin-sizes"><legend>Tamanhos disponíveis</legend><div>{productSizes.map(size => <label key={size}><input type="checkbox" checked={product.sizes.includes(size)} onChange={() => toggleSize(product, size)} />{size}</label>)}</div><small>Nenhum marcado = a equipe confirma pelo WhatsApp.</small></fieldset>
                 <label className="wide"><span>Descrição curta</span><textarea value={product.description} onChange={event => updateProduct(product.id, "description", event.target.value)} /></label>
                 <label className="wide"><span>Detalhes da peça (tecido, medidas, cuidados)</span><textarea value={product.details} placeholder={"Ex.: Tecido: viscose\nComprimento: 120 cm\nLavar à mão"} onChange={event => updateProduct(product.id, "details", event.target.value)} /></label>
