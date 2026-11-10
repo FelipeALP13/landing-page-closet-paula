@@ -1,6 +1,9 @@
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { productDetails as productDetailsTable, products as productsTable, siteContent } from "@/db/schema";
+import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
+import { isSafeLink, sanitizeAnnouncements } from "@/lib/campaign";
+import { isSiteImage } from "@/lib/site-image";
 
 export type StoreContent = {
   heroEyebrow: string;
@@ -13,7 +16,19 @@ export type StoreContent = {
   themeAccent: string;
   themeBackground: string;
   themeSurface: string;
-};
+  heroImage: string;
+  heroBadge: string;
+  storeImage: string;
+  announcements: string; // lista em JSON: [{ text, link }]
+  campaignEnabled: string; // "1" = ligada
+  campaignTitle: string;
+  campaignText: string;
+  campaignButton: string;
+  campaignLink: string;
+  campaignImage: string;
+  campaignStart: string; // AAAA-MM-DD ou vazio
+  campaignEnd: string;
+} & { [key: `cat_${string}`]: string };
 
 export type StoreProduct = {
   id: string;
@@ -51,9 +66,26 @@ export const defaultContent: StoreContent = {
   themeAccent: "#d6a2aa",
   themeBackground: "#f8f5ef",
   themeSurface: "#e8dfd1",
+  heroImage: "/assets/look-06-960.webp",
+  heroBadge: "Nova\ncoleção",
+  storeImage: "/assets/look-11-960.webp",
+  announcements: "",
+  campaignEnabled: "",
+  campaignTitle: "Coleção de Verão",
+  campaignText: "Peças leves e cheias de cor para os dias quentes.",
+  campaignButton: "Ver novidades",
+  campaignLink: "/#vitrine",
+  campaignImage: "/assets/look-03-960.webp",
+  campaignStart: "",
+  campaignEnd: "",
+  ...Object.fromEntries(categories.flatMap(category => [
+    [categoryImageKey(category.slug), category.image],
+    [categoryDescriptionKey(category.slug), category.description],
+  ])),
 };
 
-const adminEditableContentKeys = new Set<keyof StoreContent>([
+// Lista fechada do que o painel pode alterar. Assinatura e créditos não estão aqui e não podem ser mudados.
+const adminEditableContentKeys = new Set<string>([
   "heroEyebrow",
   "heroTitle",
   "heroAccent",
@@ -64,9 +96,34 @@ const adminEditableContentKeys = new Set<keyof StoreContent>([
   "themeAccent",
   "themeBackground",
   "themeSurface",
+  "heroImage",
+  "heroBadge",
+  "storeImage",
+  "announcements",
+  "campaignEnabled",
+  "campaignTitle",
+  "campaignText",
+  "campaignButton",
+  "campaignLink",
+  "campaignImage",
+  "campaignStart",
+  "campaignEnd",
+  ...categories.flatMap(category => [categoryImageKey(category.slug), categoryDescriptionKey(category.slug)]),
 ]);
 
-const colorContentKeys = new Set<keyof StoreContent>(["themeAccent", "themeBackground", "themeSurface"]);
+const colorContentKeys = new Set<string>(["themeAccent", "themeBackground", "themeSurface"]);
+const imageContentKeys = new Set<string>(["heroImage", "storeImage", "campaignImage", ...categories.map(category => categoryImageKey(category.slug))]);
+
+// Confere e limpa cada valor antes de gravar. null = valor recusado.
+function sanitizeContentValue(key: string, value: string): string | null {
+  if (colorContentKeys.has(key)) return /^#[0-9a-fA-F]{6}$/.test(value) ? value : null;
+  if (imageContentKeys.has(key)) return isSiteImage(value) ? value : null;
+  if (key === "announcements") return sanitizeAnnouncements(value);
+  if (key === "campaignEnabled") return value === "1" ? "1" : "";
+  if (key === "campaignStart" || key === "campaignEnd") return value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+  if (key === "campaignLink") return value === "" || isSafeLink(value) ? value.slice(0, 300) : null;
+  return value.slice(0, 600);
+}
 
 const baseProducts: Omit<StoreProduct, keyof ProductExtras>[] = [
   { id: "cacau", sku: "CPM-01", name: "Conjunto Cacau & Areia", category: "conjuntos", tag: "Look completo", description: "Uma composição feminina em tons terrosos para um visual marcante.", imageUrl: "/assets/look-01-960.webp", keywords: "marrom bege saia conjunto", occasions: ["dia", "especial"], sortOrder: 1, active: true },
@@ -93,7 +150,9 @@ export async function getStoreData({ includeInactive = false } = {}): Promise<{ 
     for (const row of contentRows) {
       if (row.key in content) (content as Record<string, string>)[row.key] = row.value;
     }
-    const productMap = new Map(defaultProducts.map(product => [product.id, product]));
+    // Depois que o painel copia o catálogo para o banco, só o banco vale (assim peças excluídas não voltam).
+    const catalogSeeded = contentRows.some(row => row.key === catalogSeededKey);
+    const productMap = new Map(catalogSeeded ? [] : defaultProducts.map(product => [product.id, product]));
     for (const row of productRows) {
       productMap.set(row.id, { ...row, ...emptyExtras, occasions: parseList(row.occasions) });
     }
@@ -110,16 +169,56 @@ export async function getStoreData({ includeInactive = false } = {}): Promise<{ 
   }
 }
 
+// Marca interna (não editável pelo painel) que indica que o catálogo já está todo no banco.
+const catalogSeededKey = "catalogSeeded";
+
+// Copia para o banco as peças padrão que ainda não estão lá. Roda uma vez, quando o painel abre.
+export async function ensureCatalogSeeded(userId: string) {
+  const db = getDb();
+  const flag = await db.select().from(siteContent).where(eq(siteContent.key, catalogSeededKey));
+  if (flag.length) return;
+  const now = new Date().toISOString();
+  for (const product of defaultProducts) {
+    const { core } = splitProduct(product);
+    await db.insert(productsTable).values({ ...core, occasions: JSON.stringify(core.occasions), updatedAt: now, updatedBy: userId }).onConflictDoNothing();
+  }
+  await db.insert(siteContent).values({ key: catalogSeededKey, value: "1", updatedAt: now, updatedBy: userId }).onConflictDoNothing();
+}
+
+export async function reorderProducts(ids: string[], userId: string) {
+  const db = getDb();
+  const now = new Date().toISOString();
+  for (const [index, id] of ids.entries()) {
+    await db.update(productsTable).set({ sortOrder: index + 1, updatedAt: now, updatedBy: userId }).where(eq(productsTable.id, id));
+  }
+}
+
+export async function deleteProduct(id: string) {
+  const db = getDb();
+  await db.delete(productsTable).where(eq(productsTable.id, id));
+  try {
+    await db.delete(productDetailsTable).where(eq(productDetailsTable.productId, id));
+  } catch (error) {
+    console.error("Product details not deleted", error);
+  }
+}
+
 export async function saveContent(values: Partial<StoreContent>, userId: string) {
   const db = getDb();
   const now = new Date().toISOString();
-  for (const [key, value] of Object.entries(values)) {
-    const typedKey = key as keyof StoreContent;
-    if (!adminEditableContentKeys.has(typedKey) || typeof value !== "string") continue;
-    if (colorContentKeys.has(typedKey) && !/^#[0-9a-fA-F]{6}$/.test(value)) continue;
-    await db.insert(siteContent).values({ key, value: value.slice(0, 600), updatedAt: now, updatedBy: userId })
-      .onConflictDoUpdate({ target: siteContent.key, set: { value: value.slice(0, 600), updatedAt: now, updatedBy: userId } });
+  for (const [key, raw] of Object.entries(values)) {
+    if (!adminEditableContentKeys.has(key) || typeof raw !== "string") continue;
+    const value = sanitizeContentValue(key, raw);
+    if (value === null) continue;
+    await db.insert(siteContent).values({ key, value, updatedAt: now, updatedBy: userId })
+      .onConflictDoUpdate({ target: siteContent.key, set: { value, updatedAt: now, updatedBy: userId } });
   }
+}
+
+// Separa os campos da tabela products dos campos da tabela product_details.
+function splitProduct(product: StoreProduct) {
+  const { price, sizes, gallery, details, ...core } = product;
+  return { core, extras: { price, sizes, gallery, details } };
 }
 
 // Lê a tabela product_details. Se ela ainda não existir no banco, devolve vazio e a loja segue normal.
@@ -154,11 +253,11 @@ export async function getProduct(id: string) {
 export async function saveProduct(product: StoreProduct, userId: string): Promise<boolean> {
   const db = getDb();
   const now = new Date().toISOString();
-  const { price, sizes, gallery, details, ...core } = product;
+  const { core, extras } = splitProduct(product);
   const coreValues = { ...core, occasions: JSON.stringify(core.occasions), updatedAt: now, updatedBy: userId };
   await db.insert(productsTable).values(coreValues).onConflictDoUpdate({ target: productsTable.id, set: coreValues });
   try {
-    const extraValues = { price, sizes: JSON.stringify(sizes), gallery: JSON.stringify(gallery), details, updatedAt: now, updatedBy: userId };
+    const extraValues = { ...extras, sizes: JSON.stringify(extras.sizes), gallery: JSON.stringify(extras.gallery), updatedAt: now, updatedBy: userId };
     await db.insert(productDetailsTable).values({ productId: product.id, ...extraValues })
       .onConflictDoUpdate({ target: productDetailsTable.productId, set: extraValues });
     return true;

@@ -1,4 +1,5 @@
 import { Storefront } from "@/components/storefront";
+import { campaignStatus } from "@/lib/campaign";
 import { getStoreData } from "@/lib/store-data";
 import { storeInfo } from "@/lib/store-info";
 
@@ -24,7 +25,7 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness).replace(/</g, "\\u003c") }} />
-      <Storefront {...data} mode="home" />
+      <Storefront {...data} mode="home" showCampaign={campaignStatus(data.content) === "live"} />
     </>
   );
 }

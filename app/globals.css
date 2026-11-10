@@ -129,3 +129,91 @@
 .admin-product-buttons{display:flex;flex-wrap:wrap;gap:10px}
 .admin-product-buttons .button{flex:1}
 .admin-page .button.outline{border-color:#111;color:#111}
+
+/* Painel: catálogo (nova peça, ordem, excluir) */
+.admin-add{margin-top:22px;width:100%}
+.admin-products article.unsaved{outline:2px dashed var(--rose);outline-offset:-2px}
+.admin-photo-empty{min-height:430px;display:grid;place-items:center;background:#e9e3da;color:#706963;font-size:12px;font-weight:800;text-transform:uppercase}
+.admin-product-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #e5ded5}
+.admin-product-bar>div{display:flex;gap:6px}
+.admin-product-bar button{min-width:38px;height:36px;padding:0 10px;border:1px solid #b8b0aa;background:#fff;color:#111;cursor:pointer;font-weight:700}
+.admin-product-bar button:disabled{opacity:.35;cursor:not-allowed}
+.admin-product-bar .admin-delete{border-color:#b3261e;color:#b3261e}
+.admin-badge{padding:5px 9px;background:#111;color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:680px){.admin-photo-empty{min-height:200px}}
+.admin-product-bar{flex-wrap:wrap}
+.admin-badge{white-space:nowrap}
+@media(max-width:1100px){.admin-product-fields{grid-template-columns:1fr}.admin-product-fields .wide,.admin-product-fields label:nth-of-type(5),.admin-product-fields .active-field{grid-column:auto}}
+
+/* Painel: fotos do site */
+.site-photos{display:grid;gap:22px}
+.site-photos h3{margin-top:10px;font-family:var(--serif);font-size:28px;font-weight:400}
+.site-photos-row,.site-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.site-photo,.site-photo-text,.site-category{display:flex;flex-direction:column;gap:10px;padding:14px;background:#fff;border:1px solid #ddd}
+.site-category .site-photo{padding:0;border:0}
+.site-photo img{width:100%;aspect-ratio:3/4;object-fit:cover;background:#e9e3da}
+.site-photos label{display:flex;flex-direction:column;gap:6px}
+.site-photos label span{font-size:10px;font-weight:800;text-transform:uppercase}
+.site-photos input[type=file]{width:100%;font-size:12px}
+.site-photos textarea{width:100%;min-height:90px;padding:12px;border:1px solid #b8b0aa;background:#fff;color:#111;resize:vertical}
+.site-photo-text small{color:#706963;font-size:12px}
+@media(max-width:1100px){.site-photos-row,.site-categories{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.site-photos-row,.site-categories{grid-template-columns:1fr}}
+
+/* Faixa de avisos alternando */
+.announcement a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.announcement-item{display:block;animation:announcement-in .45s ease}
+@keyframes announcement-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.announcement-item{animation:none}}
+
+/* Banner de campanha */
+.campaign{max-width:1540px;margin:clamp(40px,6vw,80px) auto 0;padding:0 clamp(18px,5vw,74px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:stretch}
+.campaign>img{width:100%;height:100%;min-height:360px;max-height:560px;object-fit:cover}
+.campaign>div{padding:clamp(36px,6vw,80px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;background:var(--sand)}
+.campaign h2{font-family:var(--serif);font-size:clamp(42px,5vw,72px);font-weight:400;line-height:.95;letter-spacing:-.05em}
+.campaign>div>p:not(.eyebrow){max-width:480px;margin:18px 0 26px;color:var(--muted);font-size:17px}
+.campaign .eyebrow{color:var(--wine)}
+@media(max-width:680px){.campaign{grid-template-columns:1fr;padding:0 14px}.campaign>img{min-height:0;height:320px}.campaign>div{padding:36px 20px}}
+
+/* Painel: avisos e campanha */
+.announcements-admin{display:grid;gap:16px}
+.announcements-admin h3{margin-top:8px;font-family:var(--serif);font-size:28px;font-weight:400}
+.announcements-admin label,.campaign-admin label{display:flex;flex-direction:column;gap:6px}
+.announcements-admin label>span,.campaign-admin label>span{font-size:10px;font-weight:800;text-transform:uppercase}
+.announcements-admin input:not([type=checkbox]):not([type=file]),.campaign-admin textarea{width:100%;padding:12px;border:1px solid #b8b0aa;background:#fff;color:#111}
+.campaign-admin textarea{min-height:90px;resize:vertical}
+.announcement-row{display:grid;grid-template-columns:1.3fr 1fr auto;gap:10px;align-items:end;padding:14px;background:#fff;border:1px solid #ddd}
+.announcement-row>button{width:44px;height:46px;border:1px solid #b3261e;background:#fff;color:#b3261e;font-size:20px;cursor:pointer}
+.campaign-admin{display:grid;gap:16px;padding:18px;background:#fff;border:1px solid #ddd}
+.campaign-admin .site-photo{padding:0;border:0;display:flex;flex-direction:column;gap:10px}
+.campaign-admin .site-photo img{width:100%;aspect-ratio:3/4;object-fit:cover;background:#e9e3da}
+.campaign-admin-grid{display:grid;grid-template-columns:220px 1fr;gap:20px}
+.campaign-admin-fields{display:grid;gap:14px}
+.campaign-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.campaign-admin small{color:#706963;font-size:12px}
+.campaign-state{justify-self:start;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#e9e3da;color:#111}
+.campaign-state.live{background:#26734f;color:#fff}
+.campaign-state.scheduled{background:#f1d9a6}
+.campaign-state.ended{background:#f3c9c5}
+@media(max-width:680px){.announcement-row{grid-template-columns:1fr}.campaign-admin-grid,.campaign-dates{grid-template-columns:1fr}}
+
+/* Botão fixo de WhatsApp */
+.whatsapp-float{position:fixed;z-index:60;right:20px;bottom:20px;height:54px;padding:0 20px 0 16px;display:flex;align-items:center;gap:10px;border-radius:999px;background:#25a35a;color:#fff;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:transform .2s}
+.whatsapp-float:hover{transform:translateY(-2px)}
+.whatsapp-float svg{width:26px;height:26px}
+@media(max-width:680px){.whatsapp-float{right:14px;bottom:14px;width:56px;height:56px;padding:0;justify-content:center}.whatsapp-float span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}}
+
+/* Painel: interesse no WhatsApp */
+.click-stats{display:grid;gap:18px}
+.click-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.click-totals>div{padding:18px;background:#fff;border:1px solid #ddd;display:flex;flex-direction:column}
+.click-totals strong{font-family:var(--serif);font-size:42px;font-weight:400;line-height:1}
+.click-totals span{margin-top:6px;color:#706963;font-size:11px;font-weight:800;text-transform:uppercase}
+.click-ranking{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.click-ranking li{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:8px 12px 8px 8px;background:#fff;border:1px solid #ddd}
+.click-ranking img,.click-ranking-empty{width:48px;height:60px;object-fit:cover;background:#e9e3da}
+.click-ranking li>div{display:flex;flex-direction:column;gap:6px}
+.click-ranking strong{font-family:var(--serif);font-size:18px;font-weight:400}
+.click-bar{display:block;height:6px;border-radius:3px;background:#26734f}
+.click-ranking b{font-size:18px}
+@media(max-width:680px){.click-totals{grid-template-columns:1fr}}

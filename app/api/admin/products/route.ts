@@ -1,23 +1,25 @@
 import { NextResponse } from "next/server";
 import { getMasterUser } from "@/app/admin-auth";
-import { saveProduct, type StoreProduct } from "@/lib/store-data";
+import { getCategory } from "@/lib/categories";
+import { deleteProduct, reorderProducts, saveProduct, type StoreProduct } from "@/lib/store-data";
+import { isSiteImage } from "@/lib/site-image";
 import { productSizes } from "@/lib/store-info";
 
-// Só aceita imagens do próprio site: fotos fixas (/assets) ou enviadas pelo painel (/media).
-function isSiteImage(value: unknown): value is string {
-  return typeof value === "string" && /^\/(assets|media)\/[\w./-]+$/.test(value) && !value.includes("..");
+// O id vira o endereço da peça (/produto/id), então só letras minúsculas, números e hífen.
+function isProductId(value: unknown): value is string {
+  return typeof value === "string" && /^[a-z0-9][a-z0-9-]{0,79}$/.test(value);
 }
 
 export async function PUT(request: Request) {
   const user = await getMasterUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const product = await request.json() as Partial<StoreProduct>;
-  if (!product.id || !product.name || !product.category || !isSiteImage(product.imageUrl)) return NextResponse.json({ error: "invalid_product" }, { status: 400 });
+  if (!isProductId(product.id) || !product.name || !getCategory(String(product.category)) || !isSiteImage(product.imageUrl)) return NextResponse.json({ error: "invalid_product" }, { status: 400 });
   const detailsSaved = await saveProduct({
-    id: String(product.id).slice(0, 80),
+    id: product.id,
     sku: String(product.sku ?? "").slice(0, 40),
     name: String(product.name).slice(0, 160),
-    category: String(product.category).slice(0, 40),
+    category: String(product.category),
     tag: String(product.tag ?? "").slice(0, 80),
     description: String(product.description ?? "").slice(0, 800),
     imageUrl: product.imageUrl.slice(0, 500),
@@ -31,4 +33,23 @@ export async function PUT(request: Request) {
     details: String(product.details ?? "").slice(0, 2000),
   }, user.userId);
   return NextResponse.json({ ok: true, detailsSaved });
+}
+
+export async function DELETE(request: Request) {
+  const user = await getMasterUser();
+  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const id = new URL(request.url).searchParams.get("id");
+  if (!isProductId(id)) return NextResponse.json({ error: "invalid_product" }, { status: 400 });
+  await deleteProduct(id);
+  return NextResponse.json({ ok: true });
+}
+
+// Recebe a lista de ids na nova ordem.
+export async function PATCH(request: Request) {
+  const user = await getMasterUser();
+  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const { ids } = await request.json() as { ids?: unknown };
+  if (!Array.isArray(ids) || ids.length > 500 || !ids.every(isProductId)) return NextResponse.json({ error: "invalid_order" }, { status: 400 });
+  await reorderProducts(ids, user.userId);
+  return NextResponse.json({ ok: true });
 }

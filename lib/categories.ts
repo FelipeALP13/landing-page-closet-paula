@@ -7,6 +7,27 @@ export const categories = [
   { slug: "conjuntos", label: "Conjuntos", description: "Produções completas sem complicar a escolha.", image: "/assets/look-01-960.webp" },
 ] as const;
 
+export type Category = { slug: string; label: string; description: string; image: string };
+
+// Chaves usadas no painel para a foto e a descrição de cada categoria.
+export const categoryImageKey = (slug: string) => `cat_${slug}_image` as const;
+export const categoryDescriptionKey = (slug: string) => `cat_${slug}_description` as const;
+
 export function getCategory(slug: string) {
   return categories.find(category => category.slug === slug);
+}
+
+// Categoria com a foto e a descrição definidas no painel (ou as padrão, se vazias).
+export function resolveCategory(slug: string, content: Record<string, string>): Category | undefined {
+  const category = getCategory(slug);
+  if (!category) return undefined;
+  return {
+    ...category,
+    image: content[categoryImageKey(slug)] || category.image,
+    description: content[categoryDescriptionKey(slug)] || category.description,
+  };
+}
+
+export function resolveCategories(content: Record<string, string>): Category[] {
+  return categories.map(category => resolveCategory(category.slug, content)!);
 }

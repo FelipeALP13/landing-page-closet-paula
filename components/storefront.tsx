@@ -2,20 +2,23 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { categories, getCategory } from "@/lib/categories";
+import { categories, resolveCategories, resolveCategory } from "@/lib/categories";
 import { productPath, productSizes, storeInfo, whatsappBase, whatsappLink } from "@/lib/store-info";
 import type { StoreContent, StoreProduct } from "@/lib/store-data";
 import { ProductDetail } from "./product-detail";
-import { ExternalArrow, ProductCard, ResponsiveImage } from "./store-ui";
+import { parseAnnouncements } from "@/lib/campaign";
+import { trackWhatsAppClick } from "@/lib/track-click";
+import { AnnouncementBar } from "./announcement-bar";
+import { CampaignBanner, ExternalArrow, ProductCard, ResponsiveImage } from "./store-ui";
 
 const quizCategories: Record<string, string> = { vestidos: "vestidos", tops: "croppeds e blusas", jeans: "jeans e calças", conjuntos: "look completo" };
 const quizOccasions: Record<string, string> = { dia: "dia a dia", trabalho: "trabalho", especial: "sair ou ocasião especial" };
 const sizes = productSizes;
 
 type Theme = "light" | "dark";
-type Props = { content: StoreContent; products: StoreProduct[]; mode: "home" | "category" | "info" | "product"; categorySlug?: string; productId?: string; origin?: string };
+type Props = { content: StoreContent; products: StoreProduct[]; mode: "home" | "category" | "info" | "product"; categorySlug?: string; productId?: string; origin?: string; showCampaign?: boolean };
 
-export function Storefront({ content, products, mode, categorySlug, productId, origin = "" }: Props) {
+export function Storefront({ content, products, mode, categorySlug, productId, origin = "", showCampaign = false }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectionOpen, setSelectionOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -101,7 +104,9 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
     setDataCleared(true);
   }
 
-  const category = categorySlug ? getCategory(categorySlug) : undefined;
+  // Fotos e descrições das categorias podem ser trocadas no painel.
+  const resolvedCategories = resolveCategories(content);
+  const category = categorySlug ? resolveCategory(categorySlug, content) : undefined;
   const query = search.trim().toLocaleLowerCase("pt-BR");
   const visibleProducts = useMemo(() => {
     const base = mode === "category" ? products.filter(product => product.category === categorySlug) : products;
@@ -116,6 +121,20 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
     const others = products.filter(product => product.id !== currentProduct.id);
     return [...others.filter(product => product.category === currentProduct.category), ...others.filter(product => product.category !== currentProduct.category)].slice(0, 4);
   }, [products, currentProduct]);
+
+  // Conta (de forma anônima) todo toque em link de WhatsApp. Links de peça trazem o id em data-track-product.
+  function handleWhatsAppClick(event: React.MouseEvent) {
+    const link = (event.target as Element).closest?.('a[href^="https://wa.me/"]');
+    if (!link) return;
+    const ids = (link.getAttribute("data-track-product") || "").split(",").filter(Boolean);
+    if (ids.length) ids.forEach(id => trackWhatsAppClick(id));
+    else trackWhatsAppClick();
+  }
+
+  // Botão fixo: na página de uma peça, já leva o nome dela na mensagem.
+  const floatingMessage = currentProduct
+    ? `Olá! Vim pelo site da Closet Paula Miranda e tenho uma dúvida sobre a peça ${currentProduct.name} (${currentProduct.sku}).`
+    : "Olá! Vim pelo site da Closet Paula Miranda e gostaria de ajuda.";
 
   // Na vitrine a busca filtra na hora; nas outras páginas leva para a página inicial com o termo.
   function submitSearch(event: React.FormEvent) {
@@ -168,9 +187,9 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
     : mode === "home" ? "Conheça algumas escolhas e entre nas categorias para ver a coleção organizada." : `Peças selecionadas em ${category?.label.toLowerCase()}.`;
 
   return (
-    <div className="site-shell" style={themeStyle}>
+    <div className="site-shell" style={themeStyle} onClick={handleWhatsAppClick}>
       <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
-      <div className="announcement">{content.announcement}</div>
+      <AnnouncementBar items={parseAnnouncements(content)} />
       <header className="header">
         <button ref={menuTriggerRef} className="menu-trigger" onClick={() => setMenuOpen(true)} aria-label="Abrir menu" aria-expanded={menuOpen} aria-controls="menu-lateral"><span /><span /></button>
         <Link className="brand" href="/"><small>Closet</small><strong>Paula Miranda</strong></Link>
@@ -200,9 +219,10 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
           <>
             <section className="hero">
               <div className="hero-copy"><p className="eyebrow">{content.heroEyebrow}</p><h1>{content.heroTitle}<br /><em>{content.heroAccent}</em></h1><p>{content.heroDescription}</p><div><a className="button dark" href="#curadoria">Descobrir meu look</a><a className="text-link" href="#categorias">Comprar por categoria <DownRightArrow /></a></div></div>
-              <div className="hero-media"><img src="/assets/look-06-960.webp" srcSet="/assets/look-06-480.webp 480w, /assets/look-06-960.webp 960w" sizes="(max-width: 680px) 100vw, 56vw" width={960} height={1280} fetchPriority="high" alt="Modelo usando vestido longo amarelo da Closet Paula Miranda" /><span aria-hidden="true">Nova<br />coleção<br />✦</span></div>
+              <div className="hero-media"><ResponsiveImage src={content.heroImage} sizes="(max-width: 680px) 100vw, 56vw" alt="Look em destaque da coleção Closet Paula Miranda" eager priority />{content.heroBadge.trim() && <span aria-hidden="true">{content.heroBadge.trim().split("\n").map((line, index) => <span key={index}>{line}<br /></span>)}✦</span>}</div>
             </section>
-            <section className="category-section" id="categorias"><div className="section-head"><div><p className="eyebrow">Escolha seu mood</p><h2>Compre por categoria</h2></div><p>Cada categoria abre uma página própria, com apenas as peças que você procura.</p></div><div className="category-cards">{categories.map(item => <Link key={item.slug} href={`/categoria/${item.slug}`}><ResponsiveImage src={item.image} sizes="(max-width: 980px) 50vw, 33vw" alt="" /><span><strong>{item.label}</strong><small aria-hidden="true">Ver categoria <ExternalArrow /></small></span></Link>)}</div></section>
+            {showCampaign && <CampaignBanner title={content.campaignTitle} text={content.campaignText} button={content.campaignButton} link={content.campaignLink} image={content.campaignImage} />}
+            <section className="category-section" id="categorias"><div className="section-head"><div><p className="eyebrow">Escolha seu mood</p><h2>Compre por categoria</h2></div><p>Cada categoria abre uma página própria, com apenas as peças que você procura.</p></div><div className="category-cards">{resolvedCategories.map(item => <Link key={item.slug} href={`/categoria/${item.slug}`}><ResponsiveImage src={item.image} sizes="(max-width: 980px) 50vw, 33vw" alt="" /><span><strong>{item.label}</strong><small aria-hidden="true">Ver categoria <ExternalArrow /></small></span></Link>)}</div></section>
             <section className="curadoria" id="curadoria"><div className="curadoria-copy"><p className="eyebrow">Exclusividade Closet Paula Miranda</p><h2>{content.curadoriaTitle}</h2><p>{content.curadoriaDescription}</p><ul><li>Sem cadastro</li><li>Recomendação personalizada</li><li>Atendimento humano no WhatsApp</li></ul></div><div className="quiz" aria-live="polite"><div className="quiz-progress"><span>{quizStep < 3 ? `0${quizStep + 1} / 03` : "RECOMENDAÇÃO PRONTA"}</span>{quizStep > 0 && quizStep < 3 && <button className="quiz-back" onClick={() => setQuizStep(step => step - 1)}>← Voltar</button>}</div>{quizStep === 0 && <QuizOptions title="O que você está procurando hoje?" options={[["vestidos", "Um vestido"], ["tops", "Cropped ou blusa"], ["jeans", "Jeans ou calça"], ["conjuntos", "Um look completo"]]} onSelect={value => answerQuiz("category", value)} />}{quizStep === 1 && <QuizOptions title="Para qual momento você quer esse look?" options={[["dia", "Dia a dia"], ["trabalho", "Trabalho"], ["especial", "Sair ou ocasião especial"]]} onSelect={value => answerQuiz("occasion", value)} />}{quizStep === 2 && <div><h3>Qual tamanho devemos considerar?</h3><div className="size-grid">{sizes.map(value => <button key={value} onClick={() => answerQuiz("size", value)}>{value}</button>)}</div><small>A equipe confirma modelagem, medidas e disponibilidade.</small></div>}{quizStep === 3 && <div className="quiz-result"><span>Sua Curadoria CPM</span><h3>Seu caminho de estilo está pronto.</h3><p>Selecionamos três opções para {quizOccasions[quiz.occasion]}, considerando o tamanho {quiz.size}.</p><div>{recommendations.map(product => <Link href={productPath(product.id)} key={product.id}><article><ResponsiveImage src={product.imageUrl} sizes="(max-width: 680px) 33vw, 20vw" alt="" /><strong>{product.name}</strong></article></Link>)}</div><a className="button whatsapp" href={whatsappLink(recommendationMessage)} target="_blank" rel="noopener noreferrer">Levar ao WhatsApp <ExternalArrow /></a><button className="restart" onClick={() => { setQuizStep(0); setRecommendations([]); }}>Refazer curadoria</button></div>}</div></section>
           </>
         )}
@@ -222,7 +242,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
         )}
 
         {mode !== "info" && (
-          <section className="store" id="loja"><img src="/assets/look-11-960.webp" srcSet="/assets/look-11-480.webp 480w, /assets/look-11-960.webp 960w" sizes="(max-width: 680px) 100vw, 50vw" width={960} height={1280} loading="lazy" decoding="async" alt="Fachada da Closet Paula Miranda, na Rua Planura, 204" /><div><p className="eyebrow">Visite a gente</p><h2>Seu closet,<br /><em>bem de perto.</em></h2><p>{storeInfo.addressLine} — {storeInfo.cityLine}</p><p>{storeInfo.hours[0]}<br />{storeInfo.hours[1]}</p><a href={whatsappLink("Olá! Gostaria de combinar uma visita à loja.")} target="_blank" rel="noopener noreferrer">Combinar uma visita <ExternalArrow /></a></div></section>
+          <section className="store" id="loja"><ResponsiveImage src={content.storeImage} sizes="(max-width: 680px) 100vw, 50vw" alt="Loja Closet Paula Miranda, na Rua Planura, 204" /><div><p className="eyebrow">Visite a gente</p><h2>Seu closet,<br /><em>bem de perto.</em></h2><p>{storeInfo.addressLine} — {storeInfo.cityLine}</p><p>{storeInfo.hours[0]}<br />{storeInfo.hours[1]}</p><a href={whatsappLink("Olá! Gostaria de combinar uma visita à loja.")} target="_blank" rel="noopener noreferrer">Combinar uma visita <ExternalArrow /></a></div></section>
         )}
       </main>
 
@@ -240,8 +260,14 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
       <aside id="minha-selecao" className={`selection-drawer ${selectionOpen ? "open" : ""}`} aria-hidden={!selectionOpen} inert={!selectionOpen} aria-label="Minha seleção">
         <header><div><small>Sua sacola de ideias</small><h2>Minha seleção</h2></div><button ref={selectionCloseRef} onClick={closePanels} aria-label="Fechar seleção">×</button></header>
         <div className="selection-items">{selectedProducts.length ? selectedProducts.map(product => <article key={product.id}><ResponsiveImage src={product.imageUrl} sizes="75px" alt="" /><div><Link href={productPath(product.id)} onClick={() => setSelectionOpen(false)}><strong>{product.name}</strong></Link><small>{product.sku}</small></div><button onClick={() => toggleProduct(product.id)} aria-label={`Remover ${product.name} da seleção`}>×</button></article>) : <div className="selection-empty"><span aria-hidden="true">♡</span><h3>Sua seleção está vazia</h3><p>Toque no coração das peças que você gostou.</p></div>}</div>
-        {selectedProducts.length > 0 && <div className="selection-footer"><span id="tamanho-label">Seu tamanho mais comum</span><div role="group" aria-labelledby="tamanho-label">{sizes.map(value => <button className={size === value ? "active" : ""} aria-pressed={size === value} key={value} onClick={() => setSize(value)}>{value}</button>)}</div>{size ? <a className="button whatsapp" href={whatsappLink(checkoutMessage)} target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <ExternalArrow /></a> : <button className="button whatsapp" disabled>Selecione o tamanho</button>}</div>}
+        {selectedProducts.length > 0 && <div className="selection-footer"><span id="tamanho-label">Seu tamanho mais comum</span><div role="group" aria-labelledby="tamanho-label">{sizes.map(value => <button className={size === value ? "active" : ""} aria-pressed={size === value} key={value} onClick={() => setSize(value)}>{value}</button>)}</div>{size ? <a className="button whatsapp" data-track-product={selectedProducts.map(product => product.id).join(",")} href={whatsappLink(checkoutMessage)} target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <ExternalArrow /></a> : <button className="button whatsapp" disabled>Selecione o tamanho</button>}</div>}
       </aside>
+
+      {!panelOpen && (
+        <a className="whatsapp-float" href={whatsappLink(floatingMessage)} data-track-product={currentProduct?.id} target="_blank" rel="noopener noreferrer" aria-label="Falar com a loja no WhatsApp">
+          <WhatsAppIcon /><span>Fale com a gente</span>
+        </a>
+      )}
     </div>
   );
 }
@@ -253,7 +279,7 @@ function InfoContent({ onClearData, dataCleared }: { onClearData: () => void; da
       <header><p className="eyebrow">Informações</p><h1>Compra, trocas<br /><em>e privacidade.</em></h1></header>
       <section id="compra"><span>01</span><div><h2>Como funciona a compra</h2><p>Este site funciona como vitrine e organizador de preferências. A seleção não reserva peças nem conclui automaticamente uma compra.</p><p>Antes do pedido, a equipe confirma pelo WhatsApp as características da peça, tamanho, preço total, estoque, formas de pagamento, eventual frete e prazo de entrega ou retirada. O pedido só é concluído depois da apresentação dessas condições e da sua concordância.</p></div></section>
       <section id="trocas"><span>02</span><div><h2>Trocas e direito de arrependimento</h2><h3>Trocas voluntárias</h3><p>Condições adicionais de troca por tamanho, cor ou preferência serão informadas pela equipe antes da compra e registradas no comprovante. Essas condições complementam, sem restringir, os direitos previstos em lei.</p><h3>Vício ou defeito</h3><p>Solicitações relacionadas a vício ou defeito seguem integralmente os prazos e garantias previstos pelo Código de Defesa do Consumidor.</p><h3>Compras à distância</h3><p>Nas compras concluídas fora da loja, você pode exercer o direito de arrependimento em até 7 dias, contados da compra ou do recebimento do produto, conforme o art. 49 do Código de Defesa do Consumidor.</p><p>Para solicitar atendimento, fale com a loja pelo WhatsApp <a href={whatsappBase} target="_blank" rel="noopener noreferrer">{storeInfo.whatsappDisplay}</a>.</p></div></section>
-      <section id="privacidade"><span>03</span><div><h2>Privacidade</h2><p>O site não pede cadastro, não exibe anúncios e não usa ferramentas externas de análise. As peças que você marca, o tamanho escolhido e a preferência de tema ficam guardados apenas neste navegador, para manter sua seleção entre visitas.</p><p>Ao tocar em um botão de WhatsApp, o site apenas prepara uma mensagem. Nada é enviado até você confirmar no WhatsApp; a partir daí, a conversa também segue as políticas do WhatsApp/Meta.</p><p>A hospedagem pode manter registros técnicos necessários para segurança e funcionamento do site.</p><button className="button dark" onClick={onClearData}>Apagar minha seleção deste navegador</button>{dataCleared && <p role="status" className="info-status">Pronto: sua seleção, tamanho e tema foram apagados deste navegador.</p>}</div></section>
+      <section id="privacidade"><span>03</span><div><h2>Privacidade</h2><p>O site não pede cadastro, não exibe anúncios e não usa ferramentas externas de análise. As peças que você marca, o tamanho escolhido e a preferência de tema ficam guardados apenas neste navegador, para manter sua seleção entre visitas.</p><p>Para saber quais peças despertam mais interesse, o site conta quantas vezes cada botão de WhatsApp é tocado. Essa contagem é anônima: guarda só o número de toques por peça e por dia, sem cookies e sem nenhum dado sobre quem tocou.</p><p>Ao tocar em um botão de WhatsApp, o site apenas prepara uma mensagem. Nada é enviado até você confirmar no WhatsApp; a partir daí, a conversa também segue as políticas do WhatsApp/Meta.</p><p>A hospedagem pode manter registros técnicos necessários para segurança e funcionamento do site.</p><button className="button dark" onClick={onClearData}>Apagar minha seleção deste navegador</button>{dataCleared && <p role="status" className="info-status">Pronto: sua seleção, tamanho e tema foram apagados deste navegador.</p>}</div></section>
       <aside className="info-legal"><h2>Identificação da loja</h2><p>{legalParts.join(" • ")}</p></aside>
     </section>
   );
@@ -283,4 +309,8 @@ function MoonIcon() {
 
 function SunIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>;
+}
+
+function WhatsAppIcon() {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z" /></svg>;
 }

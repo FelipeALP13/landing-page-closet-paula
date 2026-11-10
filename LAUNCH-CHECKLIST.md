@@ -28,6 +28,7 @@ Esses três looks foram retirados temporariamente da vitrine porque os arquivos 
 - Revisar os textos de compra, trocas e privacidade em `/informacoes`
 - Confirmar que a migração `drizzle/0001_stiff_vision.sql` (tabela `product_details`) foi aplicada no banco de produção: salvar um produto no painel não deve mostrar o aviso sobre `product_details`
 - Preencher no painel preço, tamanhos, detalhes e fotos extras de cada peça
+- Confirmar que a migração `drizzle/0002_magenta_ares.sql` (tabela `whatsapp_clicks`) foi aplicada: o resumo "Interesse no WhatsApp" do painel não deve mostrar o aviso de contagem inativa
 - Validar preços e descrições com o estoque real
 - Configurar domínio próprio, se disponível
 - Decidir se haverá métricas de acesso; se houver, atualizar a política de privacidade antes da ativação

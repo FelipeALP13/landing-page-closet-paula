@@ -15,6 +15,13 @@
       "when": 1794264613152,
       "tag": "0001_stiff_vision",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794276412957,
+      "tag": "0002_magenta_ares",
+      "breakpoints": true
     }
   ]
 }

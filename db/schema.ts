@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const siteContent = sqliteTable("site_content", {
   key: text("key").primaryKey(),
@@ -18,6 +18,14 @@ export const productDetails = sqliteTable("product_details", {
   updatedAt: text("updated_at").notNull(),
   updatedBy: text("updated_by").notNull(),
 });
+
+// Contagem anônima de toques nos botões de WhatsApp, por peça e por dia (product_id "" = contato geral).
+// Não guarda nada sobre quem clicou.
+export const whatsappClicks = sqliteTable("whatsapp_clicks", {
+  productId: text("product_id").notNull(),
+  day: text("day").notNull(),
+  clicks: integer("clicks").notNull().default(0),
+}, table => [primaryKey({ columns: [table.productId, table.day] })]);
 
 export const products = sqliteTable("products", {
   id: text("id").primaryKey(),

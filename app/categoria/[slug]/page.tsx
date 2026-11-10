@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Storefront } from "@/components/storefront";
-import { getCategory } from "@/lib/categories";
+import { getCategory, resolveCategory } from "@/lib/categories";
 import { getStoreData } from "@/lib/store-data";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +10,9 @@ type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategory(slug);
-  if (!category) return {};
+  if (!getCategory(slug)) return {};
+  const { content } = await getStoreData();
+  const category = resolveCategory(slug, content)!;
   return {
     title: `${category.label} | Closet Paula Miranda`,
     description: `${category.description} Consulte valores e disponibilidade pelo WhatsApp.`,

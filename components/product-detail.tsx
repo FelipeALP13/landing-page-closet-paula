@@ -82,7 +82,7 @@ export function ProductDetail({ product, related, selectedIds, onToggle, preferr
           </div>
 
           <div className="product-actions">
-            <a className="button whatsapp" href={whatsappLink(message)} target="_blank" rel="noopener noreferrer">Quero esta peça <ExternalArrow /></a>
+            <a className="button whatsapp" data-track-product={product.id} href={whatsappLink(message)} target="_blank" rel="noopener noreferrer">Quero esta peça <ExternalArrow /></a>
             <button className="button outline" onClick={() => onToggle(product.id)} aria-pressed={selected}>{selected ? "♥ Na sua seleção" : "♡ Adicionar à seleção"}</button>
           </div>
           <button className="share-button" onClick={share}>Compartilhar esta peça</button>
