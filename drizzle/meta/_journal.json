@@ -8,6 +8,13 @@
       "when": 1793231219832,
       "tag": "0000_hot_dormammu",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794264613152,
+      "tag": "0001_stiff_vision",
+      "breakpoints": true
     }
   ]
 }

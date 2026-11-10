@@ -7,6 +7,18 @@ export const siteContent = sqliteTable("site_content", {
   updatedBy: text("updated_by").notNull(),
 });
 
+// Dados extras da página de produto. Ficam numa tabela separada para que, se ela ainda
+// não existir no banco, a vitrine continue funcionando só com a tabela `products`.
+export const productDetails = sqliteTable("product_details", {
+  productId: text("product_id").primaryKey(),
+  price: text("price").notNull().default(""),
+  sizes: text("sizes").notNull().default("[]"),
+  gallery: text("gallery").notNull().default("[]"),
+  details: text("details").notNull().default(""),
+  updatedAt: text("updated_at").notNull(),
+  updatedBy: text("updated_by").notNull(),
+});
+
 export const products = sqliteTable("products", {
   id: text("id").primaryKey(),
   sku: text("sku").notNull(),
