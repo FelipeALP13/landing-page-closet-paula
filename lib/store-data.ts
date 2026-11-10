@@ -5,6 +5,7 @@ import { productDetails as productDetailsTable, productStatus as productStatusTa
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { isSafeLink, sanitizeAnnouncements } from "@/lib/campaign";
 import { sanitizeCustomerPhotos } from "@/lib/customer-photos";
+import { sanitizeSizeChart } from "@/lib/size-chart";
 import { isSiteImage } from "@/lib/validation";
 import { sanitizeStoreInfoValue, storeInfoDefaults, storeInfoKeys, type StoreInfoKey } from "@/lib/store-info";
 
@@ -33,6 +34,7 @@ export type StoreContent = {
   campaignEnd: string;
   showPrices: string; // "1" = mostra preços; vazio = "Valor sob consulta"
   customerPhotos: string; // lista JSON da seção "Elas usam"
+  sizeChart: string; // tabela de medidas em JSON (vazia = não aparece)
 } & { [key: `cat_${string}`]: string } & Record<StoreInfoKey, string>;
 
 export type StoreProduct = {
@@ -92,6 +94,7 @@ export const defaultContent: StoreContent = {
   campaignEnd: "",
   showPrices: "",
   customerPhotos: "",
+  sizeChart: "",
   ...storeInfoDefaults,
   ...Object.fromEntries(categories.flatMap(category => [
     [categoryImageKey(category.slug), category.image],
@@ -125,6 +128,7 @@ const adminEditableContentKeys = new Set<string>([
   "campaignEnd",
   "showPrices",
   "customerPhotos",
+  "sizeChart",
   ...storeInfoKeys,
   ...categories.flatMap(category => [categoryImageKey(category.slug), categoryDescriptionKey(category.slug)]),
 ]);
@@ -141,6 +145,7 @@ function sanitizeContentValue(key: string, value: string): string | null {
   if (key === "campaignEnabled") return value === "1" ? "1" : "";
   if (key === "showPrices") return value === "1" ? "1" : "";
   if (key === "customerPhotos") return sanitizeCustomerPhotos(value);
+  if (key === "sizeChart") return sanitizeSizeChart(value);
   if (key === "campaignStart" || key === "campaignEnd") return value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
   if (key === "campaignLink") return value === "" || isSafeLink(value) ? value.slice(0, 300) : null;
   return value.slice(0, 600);

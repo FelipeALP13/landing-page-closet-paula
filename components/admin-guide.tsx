@@ -98,6 +98,22 @@ const topics: Topic[] = [
     ),
   },
   {
+    id: "medidas",
+    title: "Tabela de medidas",
+    tab: "loja",
+    tabLabel: "Ir para Loja",
+    body: (
+      <>
+        <ol>
+          <li>Na aba <b>Loja</b>, em “Tabela de medidas”, preencha busto, cintura e quadril de cada tamanho, em centímetros (ex.: 84 a 88).</li>
+          <li>Se quiser, escreva uma observação (ex.: “Em dúvida entre dois tamanhos, escolha o maior”).</li>
+          <li>Toque em <b>Salvar tabela de medidas</b>.</li>
+        </ol>
+        <p>A tabela aparece na página de cada peça, no rodapé e no endereço <code>/medidas</code>, que você pode mandar para as clientes pelo WhatsApp. Enquanto estiver vazia, não aparece no site.</p>
+      </>
+    ),
+  },
+  {
     id: "precos",
     title: "Preços",
     tab: "pecas",

@@ -10,14 +10,15 @@ import { parseAnnouncements } from "@/lib/campaign";
 import { trackWhatsAppClick } from "@/lib/track-click";
 import { AnnouncementBar } from "./announcement-bar";
 import { parseCustomerPhotos } from "@/lib/customer-photos";
-import { CampaignBanner, CustomerGallery, ExternalArrow, ProductCard, ResponsiveImage } from "./store-ui";
+import { hasSizeChart, parseSizeChart } from "@/lib/size-chart";
+import { CampaignBanner, CustomerGallery, ExternalArrow, ProductCard, ResponsiveImage, SizeChartTable } from "./store-ui";
 
 const quizCategories: Record<string, string> = { vestidos: "vestidos", tops: "croppeds e blusas", jeans: "jeans e calças", conjuntos: "look completo" };
 const quizOccasions: Record<string, string> = { dia: "dia a dia", trabalho: "trabalho", especial: "sair ou ocasião especial" };
 const sizes = productSizes;
 
 type Theme = "light" | "dark";
-type Props = { content: StoreContent; products: StoreProduct[]; mode: "home" | "category" | "info" | "product"; categorySlug?: string; productId?: string; origin?: string; showCampaign?: boolean };
+type Props = { content: StoreContent; products: StoreProduct[]; mode: "home" | "category" | "info" | "product" | "sizes"; categorySlug?: string; productId?: string; origin?: string; showCampaign?: boolean };
 
 export function Storefront({ content, products, mode, categorySlug, productId, origin = "", showCampaign = false }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,6 +38,9 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
   // Preços só aparecem se a dona ligar "Mostrar preços no site" no painel.
   const showPrices = content.showPrices === "1";
   const customerPhotos = parseCustomerPhotos(content.customerPhotos);
+  // Tabela de medidas: só aparece quando a dona preencheu alguma medida no painel.
+  const sizeChart = parseSizeChart(content.sizeChart);
+  const showSizeChart = hasSizeChart(sizeChart);
   const wa = (message?: string) => whatsappLink(info.whatsappNumber, message);
 
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -231,7 +235,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
             </section>
             {showCampaign && <CampaignBanner title={content.campaignTitle} text={content.campaignText} button={content.campaignButton} link={content.campaignLink} image={content.campaignImage} />}
             <section className="category-section" id="categorias"><div className="section-head"><div><p className="eyebrow">Escolha seu mood</p><h2>Compre por categoria</h2></div><p>Cada categoria abre uma página própria, com apenas as peças que você procura.</p></div><div className="category-cards">{resolvedCategories.map(item => <Link key={item.slug} href={`/categoria/${item.slug}`}><ResponsiveImage src={item.image} sizes="(max-width: 980px) 50vw, 33vw" alt="" /><span><strong>{item.label}</strong><small aria-hidden="true">Ver categoria <ExternalArrow /></small></span></Link>)}</div></section>
-            <section className="curadoria" id="curadoria"><div className="curadoria-copy"><p className="eyebrow">Exclusividade Closet Paula Miranda</p><h2>{content.curadoriaTitle}</h2><p>{content.curadoriaDescription}</p><ul><li>Sem cadastro</li><li>Recomendação personalizada</li><li>Atendimento humano no WhatsApp</li></ul></div><div className="quiz" aria-live="polite"><div className="quiz-progress"><span>{quizStep < 3 ? `0${quizStep + 1} / 03` : "RECOMENDAÇÃO PRONTA"}</span>{quizStep > 0 && quizStep < 3 && <button className="quiz-back" onClick={() => setQuizStep(step => step - 1)}>← Voltar</button>}</div>{quizStep === 0 && <QuizOptions title="O que você está procurando hoje?" options={[["vestidos", "Um vestido"], ["tops", "Cropped ou blusa"], ["jeans", "Jeans ou calça"], ["conjuntos", "Um look completo"]]} onSelect={value => answerQuiz("category", value)} />}{quizStep === 1 && <QuizOptions title="Para qual momento você quer esse look?" options={[["dia", "Dia a dia"], ["trabalho", "Trabalho"], ["especial", "Sair ou ocasião especial"]]} onSelect={value => answerQuiz("occasion", value)} />}{quizStep === 2 && <div><h3>Qual tamanho devemos considerar?</h3><div className="size-grid">{sizes.map(value => <button key={value} onClick={() => answerQuiz("size", value)}>{value}</button>)}</div><small>A equipe confirma modelagem, medidas e disponibilidade.</small></div>}{quizStep === 3 && <div className="quiz-result"><span>Sua Curadoria CPM</span><h3>Seu caminho de estilo está pronto.</h3><p>Selecionamos três opções para {quizOccasions[quiz.occasion]}, considerando o tamanho {quiz.size}.</p><div>{recommendations.map(product => <Link href={productPath(product.id)} key={product.id}><article><ResponsiveImage src={product.imageUrl} sizes="(max-width: 680px) 33vw, 20vw" alt="" /><strong>{product.name}</strong></article></Link>)}</div><a className="button whatsapp" href={wa(recommendationMessage)} target="_blank" rel="noopener noreferrer">Levar ao WhatsApp <ExternalArrow /></a><button className="restart" onClick={() => { setQuizStep(0); setRecommendations([]); }}>Refazer curadoria</button></div>}</div></section>
+            <section className="curadoria" id="curadoria"><div className="curadoria-copy"><p className="eyebrow">Exclusividade Closet Paula Miranda</p><h2>{content.curadoriaTitle}</h2><p>{content.curadoriaDescription}</p><ul><li>Sem cadastro</li><li>Recomendação personalizada</li><li>Atendimento humano no WhatsApp</li></ul></div><div className="quiz" aria-live="polite"><div className="quiz-progress"><span>{quizStep < 3 ? `0${quizStep + 1} / 03` : "RECOMENDAÇÃO PRONTA"}</span>{quizStep > 0 && quizStep < 3 && <button className="quiz-back" onClick={() => setQuizStep(step => step - 1)}>← Voltar</button>}</div>{quizStep === 0 && <QuizOptions title="O que você está procurando hoje?" options={[["vestidos", "Um vestido"], ["tops", "Cropped ou blusa"], ["jeans", "Jeans ou calça"], ["conjuntos", "Um look completo"]]} onSelect={value => answerQuiz("category", value)} />}{quizStep === 1 && <QuizOptions title="Para qual momento você quer esse look?" options={[["dia", "Dia a dia"], ["trabalho", "Trabalho"], ["especial", "Sair ou ocasião especial"]]} onSelect={value => answerQuiz("occasion", value)} />}{quizStep === 2 && <div><h3>Qual tamanho devemos considerar?</h3><div className="size-grid">{sizes.map(value => <button key={value} onClick={() => answerQuiz("size", value)}>{value}</button>)}</div><small>A equipe confirma modelagem, medidas e disponibilidade.{showSizeChart && <> <Link href="/medidas">Ver tabela de medidas</Link></>}</small></div>}{quizStep === 3 && <div className="quiz-result"><span>Sua Curadoria CPM</span><h3>Seu caminho de estilo está pronto.</h3><p>Selecionamos três opções para {quizOccasions[quiz.occasion]}, considerando o tamanho {quiz.size}.</p><div>{recommendations.map(product => <Link href={productPath(product.id)} key={product.id}><article><ResponsiveImage src={product.imageUrl} sizes="(max-width: 680px) 33vw, 20vw" alt="" /><strong>{product.name}</strong></article></Link>)}</div><a className="button whatsapp" href={wa(recommendationMessage)} target="_blank" rel="noopener noreferrer">Levar ao WhatsApp <ExternalArrow /></a><button className="restart" onClick={() => { setQuizStep(0); setRecommendations([]); }}>Refazer curadoria</button></div>}</div></section>
           </>
         )}
 
@@ -240,7 +244,16 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
         )}
 
         {mode === "product" && currentProduct && (
-          <ProductDetail product={currentProduct} related={relatedProducts} selectedIds={selected} onToggle={toggleProduct} preferredSize={size} origin={origin} whatsappNumber={info.whatsappNumber} showPrices={showPrices} />
+          <ProductDetail product={currentProduct} related={relatedProducts} selectedIds={selected} onToggle={toggleProduct} preferredSize={size} origin={origin} whatsappNumber={info.whatsappNumber} showPrices={showPrices} sizeChart={showSizeChart ? sizeChart : undefined} />
+        )}
+
+        {mode === "sizes" && (
+          <section className="info-page sizes-page">
+            <header><p className="eyebrow">Atendimento</p><h1>Tabela de <em>medidas.</em></h1></header>
+            {showSizeChart ? <SizeChartTable chart={sizeChart} /> : <p className="sizes-empty">A tabela de medidas ainda não foi publicada.</p>}
+            <p className="sizes-help">Ficou em dúvida entre dois tamanhos? A equipe ajuda a escolher pelo WhatsApp.</p>
+            <a className="button whatsapp" href={wa("Olá! Estou com dúvida sobre qual tamanho escolher. Pode me ajudar?")} target="_blank" rel="noopener noreferrer">Tirar dúvida de tamanho <ExternalArrow /></a>
+          </section>
         )}
 
         {mode === "info" && <InfoContent info={info} onClearData={clearLocalData} dataCleared={dataCleared} />}
@@ -251,7 +264,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
 
         {mode === "home" && customerPhotos.length > 0 && <CustomerGallery photos={customerPhotos} instagramUrl={info.instagramUrl} />}
 
-        {mode !== "info" && (
+        {mode !== "info" && mode !== "sizes" && (
           <section className="store" id="loja"><ResponsiveImage src={content.storeImage} sizes="(max-width: 680px) 100vw, 50vw" alt="Loja Closet Paula Miranda, na Rua Planura, 204" /><div><p className="eyebrow">Visite a gente</p><h2>Seu closet,<br /><em>bem de perto.</em></h2><p>{info.addressLine} — {info.cityLine}</p><p>{info.hours[0]}<br />{info.hours[1]}</p><a href={wa("Olá! Gostaria de combinar uma visita à loja.")} target="_blank" rel="noopener noreferrer">Combinar uma visita <ExternalArrow /></a></div></section>
         )}
       </main>
@@ -260,7 +273,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
         <div className="footer-main">
           <div className="footer-brand"><small>Closet</small><strong>Paula Miranda</strong><p>Para mulheres autênticas, elegantes e despojadas.</p><a className="footer-whatsapp" href={wa()} target="_blank" rel="noopener noreferrer">Falar com a equipe <ExternalArrow /></a></div>
           <nav aria-label="Categorias"><h2>Compre</h2>{categories.map(item => <Link key={item.slug} href={`/categoria/${item.slug}`}>{item.label}</Link>)}</nav>
-          <nav aria-label="Atendimento"><h2>Atendimento</h2><Link href="/#curadoria">Curadoria CPM</Link><Link href="/informacoes#compra">Como funciona a compra</Link><Link href="/informacoes#trocas">Trocas e arrependimento</Link><Link href="/informacoes#privacidade">Privacidade</Link><a href={info.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram</a><a href={info.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a></nav>
+          <nav aria-label="Atendimento"><h2>Atendimento</h2><Link href="/#curadoria">Curadoria CPM</Link><Link href="/informacoes#compra">Como funciona a compra</Link><Link href="/informacoes#trocas">Trocas e arrependimento</Link><Link href="/informacoes#privacidade">Privacidade</Link>{showSizeChart && <Link href="/medidas">Tabela de medidas</Link>}<a href={info.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram</a><a href={info.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a></nav>
           <div className="footer-store"><h2>Visite a loja</h2><p>{info.addressLine}<br />{info.cityLine}</p><p>{info.hours[0]}<br />{info.hours[1]}</p><p>WhatsApp {info.whatsappDisplay}</p><a href={info.mapsUrl} target="_blank" rel="noopener noreferrer">Abrir no mapa <ExternalArrow /></a></div>
         </div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} {info.legalName || info.name}{info.document && ` • ${info.document}`}</span><span>Vitrine online • Valores e disponibilidade sob consulta</span><span className="developer-credit">Desenvolvido por Felipe Lucena</span></div>

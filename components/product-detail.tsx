@@ -5,7 +5,8 @@ import { useState } from "react";
 import { getCategory } from "@/lib/categories";
 import type { StoreProduct } from "@/lib/store-data";
 import { priceView, productBadge, productPath, productSizes, productWhatsappMessage, whatsappLink } from "@/lib/store-info";
-import { ExternalArrow, PriceTag, ProductCard, ResponsiveImage } from "./store-ui";
+import type { SizeChart } from "@/lib/size-chart";
+import { ExternalArrow, PriceTag, ProductCard, ResponsiveImage, SizeChartTable } from "./store-ui";
 
 type Props = {
   product: StoreProduct;
@@ -16,9 +17,10 @@ type Props = {
   origin: string;
   whatsappNumber: string;
   showPrices: boolean;
+  sizeChart?: SizeChart; // só vem preenchida se a dona cadastrou medidas
 };
 
-export function ProductDetail({ product, related, selectedIds, onToggle, preferredSize, origin, whatsappNumber, showPrices }: Props) {
+export function ProductDetail({ product, related, selectedIds, onToggle, preferredSize, origin, whatsappNumber, showPrices, sizeChart }: Props) {
   const photos = [product.imageUrl, ...product.gallery];
   const [photoIndex, setPhotoIndex] = useState(0);
   const [chosenSize, setChosenSize] = useState("");
@@ -88,6 +90,7 @@ export function ProductDetail({ product, related, selectedIds, onToggle, preferr
               {productSizes.map(value => <button key={value} className={size === value ? "active" : ""} aria-pressed={size === value} disabled={!isAvailable(value)} aria-label={isAvailable(value) ? value : `${value} (indisponível)`} onClick={() => setChosenSize(value)}>{value}</button>)}
             </div>
             <small>{product.soldOut ? "Esta peça está esgotada no momento. Peça para a equipe avisar quando voltar." : knownSizes ? "Tamanhos riscados estão esgotados no momento." : "A equipe confirma modelagem, medidas e disponibilidade."}</small>
+            {sizeChart && <details className="size-chart-details"><summary>Ver tabela de medidas</summary><SizeChartTable chart={sizeChart} /></details>}
           </div>
 
           <div className="product-actions">

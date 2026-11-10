@@ -296,3 +296,30 @@
 .customer-admin-upload{display:flex;flex-direction:column;gap:6px;padding:14px;background:#fff;border:1px dashed #b8b0aa}
 .customer-admin-upload span{font-size:10px;font-weight:800;text-transform:uppercase}
 .customer-admin>.button{justify-self:start}
+
+/* Tabela de medidas */
+.size-chart{display:grid;gap:10px}
+.size-chart table{width:100%;border-collapse:collapse;font-size:14px}
+.size-chart th,.size-chart td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+.size-chart thead th{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.size-chart thead small{font-weight:400;text-transform:none;letter-spacing:0}
+.size-chart tbody th{font-weight:800}
+.size-chart>p{color:var(--muted);font-size:13px}
+.size-chart-details{margin-top:12px}
+.size-chart-details summary{cursor:pointer;font-size:12px;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.size-chart-details[open] summary{margin-bottom:10px}
+.product-sizes small a,.size-grid~small a,.quiz small a{text-decoration:underline}
+.sizes-page{display:grid;gap:22px}
+.sizes-page .size-chart{max-width:640px}
+.sizes-page .button{justify-self:start}
+.sizes-empty,.sizes-help{color:var(--muted)}
+
+/* Painel: tabela de medidas */
+.size-chart-admin{display:grid;gap:14px}
+.size-chart-admin table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #ddd}
+.size-chart-admin th,.size-chart-admin td{padding:8px;border-bottom:1px solid #eee;text-align:left;font-size:12px}
+.size-chart-admin thead th{font-size:10px;font-weight:800;text-transform:uppercase}
+.size-chart-admin input{width:100%;padding:9px;border:1px solid #b8b0aa;background:#fff;color:#111}
+.size-chart-admin label{display:flex;flex-direction:column;gap:6px}
+.size-chart-admin label span{font-size:10px;font-weight:800;text-transform:uppercase}
+.size-chart-admin .button{justify-self:start}

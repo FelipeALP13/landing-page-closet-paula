@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { campaignStatus, isSafeLink, maxAnnouncements, parseAnnouncements, type Announcement } from "@/lib/campaign";
 import { maxCustomerPhotos, parseCustomerPhotos, type CustomerPhoto } from "@/lib/customer-photos";
+import { hasSizeChart, parseSizeChart, sizeMeasures, type SizeChart } from "@/lib/size-chart";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { compressImage } from "@/lib/compress-image";
 import { AdminGuide } from "./admin-guide";
@@ -57,6 +58,18 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
   }
   const [announcementList, setAnnouncementList] = useState<Announcement[]>(() => parseAnnouncements(initialContent));
   const [customerList, setCustomerList] = useState<CustomerPhoto[]>(() => parseCustomerPhotos(initialContent.customerPhotos));
+  const [sizeChartDraft, setSizeChartDraft] = useState<SizeChart>(() => parseSizeChart(initialContent.sizeChart));
+
+  async function saveSizeChart(event: React.FormEvent) {
+    event.preventDefault();
+    setStatus("Salvando tabela de medidas…");
+    const value = JSON.stringify(sizeChartDraft);
+    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ sizeChart: value }) });
+    const { rejected = [] } = response.ok ? await response.json() as { rejected?: string[] } : { rejected: ["sizeChart"] };
+    if (rejected.length) { setStatus("Não foi possível salvar a tabela de medidas."); return; }
+    setContent(current => ({ ...current, sizeChart: value }));
+    setStatus(hasSizeChart(sizeChartDraft) ? "Tabela de medidas publicada." : "Tabela vazia: ela não aparece no site.");
+  }
 
   async function saveCustomerPhotos(list: CustomerPhoto[]) {
     setStatus("Salvando fotos de clientes…");
@@ -495,6 +508,31 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
             <button className="button dark" type="submit">Salvar campanha</button>
           </form>
         </div>
+      </section>
+      )}
+      {tab === "loja" && (
+      <section className="admin-section">
+        <div>
+          <p className="eyebrow">Loja / Medidas</p><h2>Tabela de medidas</h2>
+          <p className="admin-help">Medidas do corpo para cada tamanho, em centímetros (ex.: 84 a 88). Aparece na página de cada peça, no rodapé e em /medidas. Enquanto estiver vazia, não aparece no site.</p>
+        </div>
+        <form className="size-chart-admin" onSubmit={saveSizeChart}>
+          <table>
+            <thead><tr><th>Tamanho</th>{sizeMeasures.map(measure => <th key={measure.key}>{measure.label} (cm)</th>)}</tr></thead>
+            <tbody>
+              {productSizes.map(size => (
+                <tr key={size}>
+                  <th>{size}</th>
+                  {sizeMeasures.map(measure => (
+                    <td key={measure.key}><input value={sizeChartDraft.rows[size][measure.key]} maxLength={20} placeholder="—" aria-label={`${measure.label} do tamanho ${size}`} onChange={event => { const value = event.target.value; setSizeChartDraft(current => ({ ...current, rows: { ...current.rows, [size]: { ...current.rows[size], [measure.key]: value } } })); }} /></td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <label><span>Observação (opcional)</span><input value={sizeChartDraft.note} maxLength={300} placeholder="Ex.: Medidas do corpo. Em dúvida entre dois tamanhos, escolha o maior." onChange={event => { const note = event.target.value; setSizeChartDraft(current => ({ ...current, note })); }} /></label>
+          <button className="button dark" type="submit">Salvar tabela de medidas</button>
+        </form>
       </section>
       )}
       {tab === "ajuda" && <AdminGuide onOpenTab={changeTab} />}

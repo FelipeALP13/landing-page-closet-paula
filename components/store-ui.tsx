@@ -2,8 +2,9 @@ import Link from "next/link";
 import { isExternalLink } from "@/lib/campaign";
 import { getCategory } from "@/lib/categories";
 import type { CustomerPhoto } from "@/lib/customer-photos";
+import { sizeMeasures, type SizeChart } from "@/lib/size-chart";
 import type { StoreProduct } from "@/lib/store-data";
-import { priceView, productBadge, productPath, productWhatsappMessage, whatsappLink, type PriceView } from "@/lib/store-info";
+import { priceView, productBadge, productPath, productSizes, productWhatsappMessage, whatsappLink, type PriceView } from "@/lib/store-info";
 
 type ProductCardProps = { product: StoreProduct; selected: boolean; onToggle: (id: string) => void; sizes: string; whatsappNumber: string; showPrices: boolean };
 
@@ -28,6 +29,24 @@ export function ProductCard({ product, selected, onToggle, sizes, whatsappNumber
 export function PriceTag({ view, className = "" }: { view: PriceView; className?: string }) {
   if (!view.original) return <p className={className}>{view.current}</p>;
   return <p className={`${className} price-sale`}><s aria-label={`De ${view.original}`}>{view.original}</s> <strong aria-label={`por ${view.current}`}>{view.current}</strong></p>;
+}
+
+// Tabela de medidas (preenchida pela dona no painel).
+export function SizeChartTable({ chart }: { chart: SizeChart }) {
+  return (
+    <div className="size-chart">
+      <table>
+        <caption className="sr-only">Tabela de medidas por tamanho, em centímetros</caption>
+        <thead><tr><th scope="col">Tamanho</th>{sizeMeasures.map(measure => <th key={measure.key} scope="col">{measure.label} <small>(cm)</small></th>)}</tr></thead>
+        <tbody>
+          {productSizes.filter(size => sizeMeasures.some(({ key }) => chart.rows[size][key].trim())).map(size => (
+            <tr key={size}><th scope="row">{size}</th>{sizeMeasures.map(measure => <td key={measure.key}>{chart.rows[size][measure.key] || "—"}</td>)}</tr>
+          ))}
+        </tbody>
+      </table>
+      {chart.note && <p>{chart.note}</p>}
+    </div>
+  );
 }
 
 // Seção "Elas usam": clientes reais usando peças da loja (fotos enviadas pela dona, com autorização).
