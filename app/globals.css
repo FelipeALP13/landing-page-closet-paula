@@ -323,3 +323,7 @@
 .size-chart-admin label{display:flex;flex-direction:column;gap:6px}
 .size-chart-admin label span{font-size:10px;font-weight:800;text-transform:uppercase}
 .size-chart-admin .button{justify-self:start}
+
+/* Painel: as colunas podem encolher até a largura da tela (evita rolagem lateral no celular) */
+.admin-section>*,.announcement-row>*,.campaign-admin-grid>*{min-width:0}
+.announcements-admin input:not([type=checkbox]):not([type=file]){min-width:0}

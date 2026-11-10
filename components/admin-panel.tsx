@@ -510,6 +510,26 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
         </div>
       </section>
       )}
+      {tab === "ajuda" && <AdminGuide onOpenTab={changeTab} />}
+      {tab === "loja" && (
+      <section className="admin-section">
+        <div>
+          <p className="eyebrow">Loja / Dados</p><h2>Contato e dados legais</h2>
+          <p className="admin-help">Aparecem no rodapé, na seção da loja, na página de informações e em todos os botões de WhatsApp do site.</p>
+          {legalMissing && <p className="admin-warning">Razão social (ou nome completo), CPF/CNPJ e e-mail são obrigatórios por lei para vender pela internet. Preencha antes de divulgar o site.</p>}
+        </div>
+        <form className="store-info-form" onSubmit={saveStoreInfo} noValidate>
+          {storeFields.map(field => (
+            <label key={field.key} className={storeErrors[field.key] ? "has-error" : undefined}>
+              <span>{field.label}</span>
+              <input value={content[field.key]} type={field.key === "storeEmail" ? "email" : "text"} inputMode={field.key === "storeWhatsapp" || field.key === "storeDocument" ? "numeric" : undefined} placeholder={field.placeholder} onChange={event => { const value = event.target.value; setContent(current => ({ ...current, [field.key]: value })); setStoreErrors(current => ({ ...current, [field.key]: "" })); }} />
+              {storeErrors[field.key] ? <small className="field-error">{storeErrors[field.key]}</small> : field.hint && <small>{field.hint(content[field.key])}</small>}
+            </label>
+          ))}
+          <button className="button dark" type="submit">Salvar dados da loja</button>
+        </form>
+      </section>
+      )}
       {tab === "loja" && (
       <section className="admin-section">
         <div>
@@ -532,26 +552,6 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           </table>
           <label><span>Observação (opcional)</span><input value={sizeChartDraft.note} maxLength={300} placeholder="Ex.: Medidas do corpo. Em dúvida entre dois tamanhos, escolha o maior." onChange={event => { const note = event.target.value; setSizeChartDraft(current => ({ ...current, note })); }} /></label>
           <button className="button dark" type="submit">Salvar tabela de medidas</button>
-        </form>
-      </section>
-      )}
-      {tab === "ajuda" && <AdminGuide onOpenTab={changeTab} />}
-      {tab === "loja" && (
-      <section className="admin-section">
-        <div>
-          <p className="eyebrow">Loja / Dados</p><h2>Contato e dados legais</h2>
-          <p className="admin-help">Aparecem no rodapé, na seção da loja, na página de informações e em todos os botões de WhatsApp do site.</p>
-          {legalMissing && <p className="admin-warning">Razão social (ou nome completo), CPF/CNPJ e e-mail são obrigatórios por lei para vender pela internet. Preencha antes de divulgar o site.</p>}
-        </div>
-        <form className="store-info-form" onSubmit={saveStoreInfo} noValidate>
-          {storeFields.map(field => (
-            <label key={field.key} className={storeErrors[field.key] ? "has-error" : undefined}>
-              <span>{field.label}</span>
-              <input value={content[field.key]} type={field.key === "storeEmail" ? "email" : "text"} inputMode={field.key === "storeWhatsapp" || field.key === "storeDocument" ? "numeric" : undefined} placeholder={field.placeholder} onChange={event => { const value = event.target.value; setContent(current => ({ ...current, [field.key]: value })); setStoreErrors(current => ({ ...current, [field.key]: "" })); }} />
-              {storeErrors[field.key] ? <small className="field-error">{storeErrors[field.key]}</small> : field.hint && <small>{field.hint(content[field.key])}</small>}
-            </label>
-          ))}
-          <button className="button dark" type="submit">Salvar dados da loja</button>
         </form>
       </section>
       )}

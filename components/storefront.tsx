@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { categories, resolveCategories, resolveCategory } from "@/lib/categories";
 import { productPath, productSizes, resolveStoreInfo, whatsappLink, type StoreInfo } from "@/lib/store-info";
@@ -43,6 +44,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
   const showSizeChart = hasSizeChart(sizeChart);
   const wa = (message?: string) => whatsappLink(info.whatsappNumber, message);
 
+  const router = useRouter();
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const menuCloseRef = useRef<HTMLButtonElement>(null);
   const selectionTriggerRef = useRef<HTMLButtonElement>(null);
@@ -60,7 +62,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
     const initialQuery = new URLSearchParams(window.location.search).get("q");
     if (initialQuery) {
       setSearch(initialQuery);
-      requestAnimationFrame(() => document.getElementById("vitrine")?.scrollIntoView());
+      setTimeout(() => document.getElementById("vitrine")?.scrollIntoView({ behavior: "instant" }), 50);
     }
     setStorageLoaded(true);
   }, []);
@@ -154,9 +156,17 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
     if (mode === "home" || mode === "category") {
       document.getElementById("vitrine")?.scrollIntoView({ behavior: "smooth" });
     } else if (search.trim()) {
-      window.location.href = `/?q=${encodeURIComponent(search.trim())}`;
+      // scroll: false para o roteador não voltar ao topo depois que a página rolar até os resultados.
+      router.push(`/?q=${encodeURIComponent(search.trim())}#vitrine`, { scroll: false });
     }
   }
+
+  // Ao chegar na página inicial vindo de uma busca (#vitrine), rola até os resultados.
+  useEffect(() => {
+    if (mode === "home" && window.location.hash === "#vitrine") {
+      setTimeout(() => document.getElementById("vitrine")?.scrollIntoView({ behavior: "instant" }), 50);
+    }
+  }, [mode]);
 
   const selectedProducts = selected.map(id => products.find(product => product.id === id)).filter(Boolean) as StoreProduct[];
   const checkoutMessage = `Olá! Montei esta seleção no site da Closet Paula Miranda:\n${selectedProducts.map((product, index) => `${index + 1}. ${product.name} (${product.sku})`).join("\n")}\n\nMeu tamanho mais comum é ${size || "a confirmar"}. Gostaria de confirmar valores, medidas, disponibilidade e entrega ou retirada.`;
