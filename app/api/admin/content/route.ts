@@ -6,6 +6,6 @@ export async function PUT(request: Request) {
   const user = await getMasterUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const values = await request.json() as Partial<StoreContent>;
-  await saveContent(values, user.userId);
-  return NextResponse.json({ ok: true });
+  const rejected = await saveContent(values, user.userId);
+  return NextResponse.json({ ok: true, rejected });
 }

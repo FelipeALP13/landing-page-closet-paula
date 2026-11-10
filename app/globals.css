@@ -217,3 +217,15 @@
 .click-bar{display:block;height:6px;border-radius:3px;background:#26734f}
 .click-ranking b{font-size:18px}
 @media(max-width:680px){.click-totals{grid-template-columns:1fr}}
+
+/* Painel: dados da loja */
+.store-info-form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.store-info-form label{display:flex;flex-direction:column;gap:6px}
+.store-info-form label>span{font-size:10px;font-weight:800;text-transform:uppercase}
+.store-info-form input{width:100%;padding:12px;border:1px solid #b8b0aa;background:#fff;color:#111}
+.store-info-form small{color:#706963;font-size:12px}
+.store-info-form .has-error input{border-color:#b3261e;outline:1px solid #b3261e}
+.store-info-form .field-error{color:#b3261e;font-weight:700}
+.store-info-form .button{grid-column:1/-1}
+.admin-warning{margin-top:14px;padding:12px;border-left:3px solid #b3261e;background:#fbeeed;color:#6b1a14;font-size:13px}
+@media(max-width:680px){.store-info-form{grid-template-columns:1fr}}

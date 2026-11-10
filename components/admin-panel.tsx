@@ -7,7 +7,21 @@ import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/cate
 import { compressImage } from "@/lib/compress-image";
 import type { ClickStats } from "@/lib/click-stats";
 import type { StoreContent, StoreProduct } from "@/lib/store-data";
-import { productPath, productSizes } from "@/lib/store-info";
+import { formatDocument, formatPhone, normalizeDocument, normalizeWhatsapp, productPath, productSizes, sanitizeStoreInfoValue, type StoreInfoKey } from "@/lib/store-info";
+
+// Campos da seção "Dados da loja". O nome da loja e a assinatura do desenvolvedor não são editáveis.
+const storeFields: { key: StoreInfoKey; label: string; placeholder?: string; error: string; hint?: (value: string) => string }[] = [
+  { key: "storeWhatsapp", label: "WhatsApp da loja", placeholder: "(12) 99719-6086", error: "Número inválido. Use DDD + número, ex.: (12) 99719-6086.", hint: value => { const n = normalizeWhatsapp(value); return n ? `Aparece como ${formatPhone(n)}` : ""; } },
+  { key: "storeAddress", label: "Endereço", placeholder: "Rua Planura, 204", error: "Endereço inválido." },
+  { key: "storeCity", label: "Cidade e estado", placeholder: "São José dos Campos — SP", error: "Cidade inválida." },
+  { key: "storeHours1", label: "Horário (linha 1)", placeholder: "Seg a sex: 09h às 18h", error: "Texto inválido." },
+  { key: "storeHours2", label: "Horário (linha 2)", placeholder: "Sábado: 09h às 15h", error: "Texto inválido." },
+  { key: "storeInstagram", label: "Link do Instagram", placeholder: "https://www.instagram.com/…", error: "Use o link completo do perfil, começando com https://www.instagram.com/" },
+  { key: "storeFacebook", label: "Link do Facebook", placeholder: "https://www.facebook.com/…", error: "Use o link completo da página, começando com https://www.facebook.com/" },
+  { key: "storeLegalName", label: "Razão social ou nome completo", placeholder: "Como está no CNPJ ou CPF", error: "Texto inválido." },
+  { key: "storeDocument", label: "CNPJ ou CPF", placeholder: "Só números ou com pontuação", error: "CNPJ/CPF inválido. Confira os números.", hint: value => { const d = normalizeDocument(value); return d ? `Aparece como ${formatDocument(d)}` : ""; } },
+  { key: "storeEmail", label: "E-mail de atendimento", placeholder: "contato@…", error: "E-mail inválido." },
+];
 
 const maxGalleryPhotos = 8;
 const featuredCount = 4;
@@ -38,6 +52,29 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
     const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ announcements: value }) });
     if (response.ok) setContent(current => ({ ...current, announcements: value }));
     setStatus(response.ok ? "Avisos publicados." : "Não foi possível salvar os avisos.");
+  }
+
+  const [storeErrors, setStoreErrors] = useState<Partial<Record<StoreInfoKey, string>>>({});
+  const legalMissing = !content.storeLegalName.trim() || !content.storeDocument.trim() || !content.storeEmail.trim();
+
+  async function saveStoreInfo(event: React.FormEvent) {
+    event.preventDefault();
+    // Confere tudo antes de enviar; o servidor confere de novo.
+    const errors: Partial<Record<StoreInfoKey, string>> = {};
+    const values: Partial<Record<StoreInfoKey, string>> = {};
+    for (const field of storeFields) {
+      const clean = sanitizeStoreInfoValue(field.key, content[field.key]);
+      if (clean === null) errors[field.key] = field.error;
+      else values[field.key] = clean;
+    }
+    setStoreErrors(errors);
+    if (Object.keys(errors).length) { setStatus("Confira os campos marcados em vermelho em Dados da loja."); return; }
+    setStatus("Salvando dados da loja…");
+    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(values) });
+    if (!response.ok) { setStatus("Não foi possível salvar os dados da loja."); return; }
+    const { rejected = [] } = await response.json() as { rejected?: string[] };
+    setContent(current => ({ ...current, ...values }));
+    setStatus(rejected.length ? "Alguns dados não foram aceitos. Confira os campos e tente de novo." : "Dados da loja atualizados em todo o site.");
   }
 
   async function saveCampaign(event: React.FormEvent) {
@@ -334,6 +371,23 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
             <button className="button dark" type="submit">Salvar campanha</button>
           </form>
         </div>
+      </section>
+      <section className="admin-section">
+        <div>
+          <p className="eyebrow">05 / Dados da loja</p><h2>Contato e dados legais</h2>
+          <p className="admin-help">Aparecem no rodapé, na seção da loja, na página de informações e em todos os botões de WhatsApp do site.</p>
+          {legalMissing && <p className="admin-warning">Razão social (ou nome completo), CPF/CNPJ e e-mail são obrigatórios por lei para vender pela internet. Preencha antes de divulgar o site.</p>}
+        </div>
+        <form className="store-info-form" onSubmit={saveStoreInfo} noValidate>
+          {storeFields.map(field => (
+            <label key={field.key} className={storeErrors[field.key] ? "has-error" : undefined}>
+              <span>{field.label}</span>
+              <input value={content[field.key]} type={field.key === "storeEmail" ? "email" : "text"} inputMode={field.key === "storeWhatsapp" || field.key === "storeDocument" ? "numeric" : undefined} placeholder={field.placeholder} onChange={event => { const value = event.target.value; setContent(current => ({ ...current, [field.key]: value })); setStoreErrors(current => ({ ...current, [field.key]: "" })); }} />
+              {storeErrors[field.key] ? <small className="field-error">{storeErrors[field.key]}</small> : field.hint && <small>{field.hint(content[field.key])}</small>}
+            </label>
+          ))}
+          <button className="button dark" type="submit">Salvar dados da loja</button>
+        </form>
       </section>
     </main>
   );

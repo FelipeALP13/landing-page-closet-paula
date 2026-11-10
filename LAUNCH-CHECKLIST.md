@@ -24,7 +24,7 @@ Esses três looks foram retirados temporariamente da vitrine porque os arquivos 
 ## Antes de mudar o acesso
 
 - Revisar a política comercial com o responsável da loja
-- Inserir os dados obrigatórios em `lib/store-info.ts` (`legalName`, `document`, `email`); eles aparecem automaticamente no rodapé e em `/informacoes`
+- Preencher no painel, em "05 / Dados da loja", razão social, CPF/CNPJ e e-mail; eles aparecem automaticamente no rodapé e em `/informacoes`
 - Revisar os textos de compra, trocas e privacidade em `/informacoes`
 - Confirmar que a migração `drizzle/0001_stiff_vision.sql` (tabela `product_details`) foi aplicada no banco de produção: salvar um produto no painel não deve mostrar o aviso sobre `product_details`
 - Preencher no painel preço, tamanhos, detalhes e fotos extras de cada peça

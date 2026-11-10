@@ -4,7 +4,7 @@ import { Storefront } from "@/components/storefront";
 import { getCategory } from "@/lib/categories";
 import { getRequestOrigin } from "@/lib/request-origin";
 import { getProduct } from "@/lib/store-data";
-import { formatPrice, parsePrice, productPath, storeInfo } from "@/lib/store-info";
+import { formatPrice, parsePrice, productPath, storeName } from "@/lib/store-info";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: Params) {
     description: product.description,
     category: getCategory(product.category)?.label,
     image: [product.imageUrl, ...product.gallery].map(url => `${origin}${url}`),
-    brand: { "@type": "Brand", name: storeInfo.name },
+    brand: { "@type": "Brand", name: storeName },
     ...(price !== null && {
       offers: { "@type": "Offer", price: price.toFixed(2), priceCurrency: "BRL", availability: "https://schema.org/InStock", url: `${origin}${productPath(product.id)}` },
     }),

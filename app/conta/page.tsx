@@ -2,7 +2,8 @@ import Link from "next/link";
 import { chatGPTSignInPath, chatGPTSignOutPath, getChatGPTUser } from "../chatgpt-auth";
 import { isMasterEmail } from "../admin-auth";
 import type { Metadata } from "next";
-import { storeInfo, whatsappBase } from "@/lib/store-info";
+import { getStoreData } from "@/lib/store-data";
+import { resolveStoreInfo, whatsappLink } from "@/lib/store-info";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Área da loja | Closet Paula Miranda", robots: { index: false, follow: false } };
@@ -10,9 +11,10 @@ export const metadata: Metadata = { title: "Área da loja | Closet Paula Miranda
 export default async function AccountPage() {
   const user = await getChatGPTUser();
   const master = user ? isMasterEmail(user.email) : false;
+  const storeInfo = resolveStoreInfo((await getStoreData()).content);
   return (
     <main className="login-page">
-      <header><Link className="brand dark-brand" href="/"><small>Closet</small><strong>Paula Miranda</strong></Link><div><a href={whatsappBase}>{storeInfo.whatsappDisplay}</a><span>{storeInfo.hours[0]}</span></div></header>
+      <header><Link className="brand dark-brand" href="/"><small>Closet</small><strong>Paula Miranda</strong></Link><div><a href={whatsappLink(storeInfo.whatsappNumber)}>{storeInfo.whatsappDisplay}</a><span>{storeInfo.hours[0]}</span></div></header>
       <section className="login-card">
         <span className="login-icon">○</span>
         <p className="eyebrow">Área administrativa</p>

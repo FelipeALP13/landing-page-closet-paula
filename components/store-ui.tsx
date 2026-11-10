@@ -4,9 +4,9 @@ import { getCategory } from "@/lib/categories";
 import type { StoreProduct } from "@/lib/store-data";
 import { formatPrice, productPath, whatsappLink } from "@/lib/store-info";
 
-type ProductCardProps = { product: StoreProduct; selected: boolean; onToggle: (id: string) => void; sizes: string };
+type ProductCardProps = { product: StoreProduct; selected: boolean; onToggle: (id: string) => void; sizes: string; whatsappNumber: string };
 
-export function ProductCard({ product, selected, onToggle, sizes }: ProductCardProps) {
+export function ProductCard({ product, selected, onToggle, sizes, whatsappNumber }: ProductCardProps) {
   return (
     <article className="product-card">
       <div>
@@ -17,7 +17,7 @@ export function ProductCard({ product, selected, onToggle, sizes }: ProductCardP
       <small>{getCategory(product.category)?.label}</small>
       <h3><Link href={productPath(product.id)}>{product.name}</Link></h3>
       <p>{formatPrice(product.price)}</p>
-      <a data-track-product={product.id} href={whatsappLink(`Olá! Gostei de uma peça no site: ${product.name} (${product.sku}). Poderia me informar ${product.price ? "" : "o valor, "}as medidas e se ela está disponível?`)} target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <ExternalArrow /></a>
+      <a data-track-product={product.id} href={whatsappLink(whatsappNumber, `Olá! Gostei de uma peça no site: ${product.name} (${product.sku}). Poderia me informar ${product.price ? "" : "o valor, "}as medidas e se ela está disponível?`)} target="_blank" rel="noopener noreferrer">Consultar no WhatsApp <ExternalArrow /></a>
     </article>
   );
 }

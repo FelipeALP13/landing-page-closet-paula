@@ -4,6 +4,7 @@ import { productDetails as productDetailsTable, products as productsTable, siteC
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { isSafeLink, sanitizeAnnouncements } from "@/lib/campaign";
 import { isSiteImage } from "@/lib/site-image";
+import { sanitizeStoreInfoValue, storeInfoDefaults, storeInfoKeys, type StoreInfoKey } from "@/lib/store-info";
 
 export type StoreContent = {
   heroEyebrow: string;
@@ -28,7 +29,7 @@ export type StoreContent = {
   campaignImage: string;
   campaignStart: string; // AAAA-MM-DD ou vazio
   campaignEnd: string;
-} & { [key: `cat_${string}`]: string };
+} & { [key: `cat_${string}`]: string } & Record<StoreInfoKey, string>;
 
 export type StoreProduct = {
   id: string;
@@ -78,6 +79,7 @@ export const defaultContent: StoreContent = {
   campaignImage: "/assets/look-03-960.webp",
   campaignStart: "",
   campaignEnd: "",
+  ...storeInfoDefaults,
   ...Object.fromEntries(categories.flatMap(category => [
     [categoryImageKey(category.slug), category.image],
     [categoryDescriptionKey(category.slug), category.description],
@@ -108,6 +110,7 @@ const adminEditableContentKeys = new Set<string>([
   "campaignImage",
   "campaignStart",
   "campaignEnd",
+  ...storeInfoKeys,
   ...categories.flatMap(category => [categoryImageKey(category.slug), categoryDescriptionKey(category.slug)]),
 ]);
 
@@ -116,6 +119,7 @@ const imageContentKeys = new Set<string>(["heroImage", "storeImage", "campaignIm
 
 // Confere e limpa cada valor antes de gravar. null = valor recusado.
 function sanitizeContentValue(key: string, value: string): string | null {
+  if ((storeInfoKeys as string[]).includes(key)) return sanitizeStoreInfoValue(key as StoreInfoKey, value);
   if (colorContentKeys.has(key)) return /^#[0-9a-fA-F]{6}$/.test(value) ? value : null;
   if (imageContentKeys.has(key)) return isSiteImage(value) ? value : null;
   if (key === "announcements") return sanitizeAnnouncements(value);
@@ -203,16 +207,19 @@ export async function deleteProduct(id: string) {
   }
 }
 
-export async function saveContent(values: Partial<StoreContent>, userId: string) {
+// Devolve as chaves recusadas (valor inválido), para o painel avisar a dona.
+export async function saveContent(values: Partial<StoreContent>, userId: string): Promise<string[]> {
   const db = getDb();
   const now = new Date().toISOString();
+  const rejected: string[] = [];
   for (const [key, raw] of Object.entries(values)) {
     if (!adminEditableContentKeys.has(key) || typeof raw !== "string") continue;
     const value = sanitizeContentValue(key, raw);
-    if (value === null) continue;
+    if (value === null) { rejected.push(key); continue; }
     await db.insert(siteContent).values({ key, value, updatedAt: now, updatedBy: userId })
       .onConflictDoUpdate({ target: siteContent.key, set: { value, updatedAt: now, updatedBy: userId } });
   }
+  return rejected;
 }
 
 // Separa os campos da tabela products dos campos da tabela product_details.

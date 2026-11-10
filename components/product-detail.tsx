@@ -14,9 +14,10 @@ type Props = {
   onToggle: (id: string) => void;
   preferredSize: string;
   origin: string;
+  whatsappNumber: string;
 };
 
-export function ProductDetail({ product, related, selectedIds, onToggle, preferredSize, origin }: Props) {
+export function ProductDetail({ product, related, selectedIds, onToggle, preferredSize, origin, whatsappNumber }: Props) {
   const photos = [product.imageUrl, ...product.gallery];
   const [photoIndex, setPhotoIndex] = useState(0);
   const [chosenSize, setChosenSize] = useState("");
@@ -82,7 +83,7 @@ export function ProductDetail({ product, related, selectedIds, onToggle, preferr
           </div>
 
           <div className="product-actions">
-            <a className="button whatsapp" data-track-product={product.id} href={whatsappLink(message)} target="_blank" rel="noopener noreferrer">Quero esta peça <ExternalArrow /></a>
+            <a className="button whatsapp" data-track-product={product.id} href={whatsappLink(whatsappNumber, message)} target="_blank" rel="noopener noreferrer">Quero esta peça <ExternalArrow /></a>
             <button className="button outline" onClick={() => onToggle(product.id)} aria-pressed={selected}>{selected ? "♥ Na sua seleção" : "♡ Adicionar à seleção"}</button>
           </div>
           <button className="share-button" onClick={share}>Compartilhar esta peça</button>
@@ -102,7 +103,7 @@ export function ProductDetail({ product, related, selectedIds, onToggle, preferr
       {related.length > 0 && (
         <section className="products-section related-products">
           <div className="section-head"><div><p className="eyebrow">Vitrine CPM</p><h2>Combina com você</h2></div><p>Outras peças da coleção para completar o look.</p></div>
-          <div className="product-grid">{related.map(item => <ProductCard key={item.id} product={item} selected={selectedIds.includes(item.id)} onToggle={onToggle} sizes="(max-width: 680px) 50vw, 25vw" />)}</div>
+          <div className="product-grid">{related.map(item => <ProductCard key={item.id} whatsappNumber={whatsappNumber} product={item} selected={selectedIds.includes(item.id)} onToggle={onToggle} sizes="(max-width: 680px) 50vw, 25vw" />)}</div>
         </section>
       )}
     </>
