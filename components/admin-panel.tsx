@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { campaignStatus, isSafeLink, maxAnnouncements, parseAnnouncements, type Announcement } from "@/lib/campaign";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { compressImage } from "@/lib/compress-image";
+import { AdminGuide } from "./admin-guide";
 import type { ClickStats } from "@/lib/click-stats";
 import type { StoreContent, StoreProduct } from "@/lib/store-data";
 import { formatDocument, formatPhone, normalizeDocument, normalizeWhatsapp, productPath, productSizes, sanitizeStoreInfoValue, type StoreInfoKey } from "@/lib/store-info";
@@ -289,6 +290,7 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
       <section className="admin-section">
         <div>
           <p className="eyebrow">Resumo / Últimos {clickStats.days} dias</p><h2>Interesse no WhatsApp</h2>
+          <button type="button" className="admin-guide-hint" onClick={() => changeTab("ajuda")}>Primeira vez no painel? Veja o guia de uso →</button>
           <p className="admin-help">Quantas vezes as clientes tocaram nos botões de WhatsApp do site. A contagem é anônima: não identifica quem tocou.</p>
         </div>
         {!clickStats.available ? <p className="admin-help">A contagem ainda não está ativa: o banco precisa da tabela whatsapp_clicks (migração 0002).</p> : (
@@ -444,6 +446,7 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
         </div>
       </section>
       )}
+      {tab === "ajuda" && <AdminGuide onOpenTab={changeTab} />}
       {tab === "loja" && (
       <section className="admin-section">
         <div>
@@ -493,13 +496,22 @@ const adminTabs = [
   { id: "inicio", label: "Página inicial" },
   { id: "avisos", label: "Avisos" },
   { id: "loja", label: "Loja" },
+  { id: "ajuda", label: "Ajuda" },
 ] as const;
 
 type AdminTab = (typeof adminTabs)[number]["id"];
 
 function AdminTabs({ active, onChange, legalMissing, productCount }: { active: AdminTab; onChange: (tab: AdminTab) => void; legalMissing: boolean; productCount: number }) {
+  const navRef = useRef<HTMLElement>(null);
+  // No celular a barra rola para o lado: mantém a aba ativa visível.
+  // Rola só a barra (scrollIntoView empurraria a página inteira para o lado).
+  useEffect(() => {
+    const nav = navRef.current;
+    const button = nav?.querySelector<HTMLElement>("button.active");
+    if (nav && button) nav.scrollLeft = button.offsetLeft - (nav.clientWidth - button.offsetWidth) / 2;
+  }, [active]);
   return (
-    <nav className="admin-tabs" aria-label="Seções do painel">
+    <nav ref={navRef} className="admin-tabs" aria-label="Seções do painel">
       {adminTabs.map(item => (
         <button key={item.id} type="button" className={active === item.id ? "active" : undefined} aria-current={active === item.id ? "page" : undefined} onClick={() => onChange(item.id)}>
           {item.label}
