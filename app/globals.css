@@ -249,3 +249,16 @@
 .admin-status-flags>label{flex-direction:row!important;align-items:center;gap:6px!important;font-size:13px;font-weight:700}
 .admin-status-flags>label input[type=checkbox]{width:auto}
 .admin-status-flags>label.sale-price{flex-direction:column!important;align-items:stretch;min-width:180px}
+
+/* Painel: abas */
+.admin-tabs{position:sticky;z-index:6;top:0;display:flex;gap:4px;overflow-x:auto;padding:10px clamp(14px,5vw,70px);background:#11100f;border-top:1px solid #2b2826;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tabs button{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:10px 16px;border:0;border-radius:999px;background:none;color:#cfc7c1;cursor:pointer;font-size:13px;font-weight:700;white-space:nowrap}
+.admin-tabs button:hover{color:#fff}
+.admin-tabs button.active{background:var(--rose);color:#111}
+.admin-tabs small{padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.15);font-size:11px}
+.admin-tabs button.active small{background:rgba(0,0,0,.12)}
+.admin-tab-alert{width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#b3261e;color:#fff;font-size:11px;font-weight:800}
+.admin-tabs~.admin-status{top:58px}
+.admin-title{padding:clamp(36px,5vw,60px) clamp(20px,6vw,90px)}
+@media(max-width:680px){.admin-products article>img,.admin-photo-empty{height:240px;min-height:0}}

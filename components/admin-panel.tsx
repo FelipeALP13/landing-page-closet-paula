@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { campaignStatus, isSafeLink, maxAnnouncements, parseAnnouncements, type Announcement } from "@/lib/campaign";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { compressImage } from "@/lib/compress-image";
@@ -34,6 +34,25 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
   // Peças criadas no painel que ainda não foram salvas no banco.
   const [unsavedIds, setUnsavedIds] = useState<string[]>([]);
   const [status, setStatus] = useState("");
+  const [tab, setTab] = useState<AdminTab>("resumo");
+
+  // A aba aberta fica no endereço (#pecas, #avisos…), para continuar nela ao recarregar a página.
+  useEffect(() => {
+    const fromHash = () => {
+      const hash = window.location.hash.slice(1) as AdminTab;
+      if (adminTabs.some(item => item.id === hash)) setTab(hash);
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, []);
+
+  function changeTab(next: AdminTab) {
+    setTab(next);
+    setStatus("");
+    window.history.replaceState(null, "", `#${next}`);
+    window.scrollTo({ top: 0 });
+  }
   const [announcementList, setAnnouncementList] = useState<Announcement[]>(() => parseAnnouncements(initialContent));
 
   const isUnsaved = (id: string) => unsavedIds.includes(id);
@@ -235,8 +254,10 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
   return (
     <main className="admin-page">
       <header className="admin-header"><Link className="brand" href="/"><small>Closet</small><strong>Paula Miranda</strong></Link><div><span>Master: {userName}</span><Link href="/" target="_blank">Ver loja <AdminExternalArrow /></Link><a href={signOutPath} target="_top">Sair</a></div></header>
-      <div className="admin-title"><p className="eyebrow">Painel master</p><h1>Edite a loja sem mexer no código.</h1><p>Altere cores, títulos, categorias e fotos. Créditos técnicos e a assinatura do desenvolvedor são protegidos e não aparecem neste painel.</p></div>
+      {tab === "resumo" && <div className="admin-title"><p className="eyebrow">Painel master</p><h1>Edite a loja sem mexer no código.</h1><p>Altere cores, títulos, categorias e fotos. Créditos técnicos e a assinatura do desenvolvedor são protegidos e não aparecem neste painel.</p></div>}
+      <AdminTabs active={tab} onChange={changeTab} legalMissing={legalMissing} productCount={products.length} />
       {status && <output className="admin-status" aria-live="polite">{status}</output>}
+      {tab === "resumo" && (
       <section className="admin-section">
         <div>
           <p className="eyebrow">Resumo / Últimos {clickStats.days} dias</p><h2>Interesse no WhatsApp</h2>
@@ -267,10 +288,12 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           </div>
         )}
       </section>
-      <section className="admin-section"><div><p className="eyebrow">01 / Aparência</p><h2>Cores e títulos</h2><p className="admin-help">Somente os campos comerciais autorizados podem ser alterados.</p></div><form className="content-form" onSubmit={savePhrases}>{editableContentKeys.map(key => { const value = content[key]; const isColor = colorContentKeys.has(key); return <label className={isColor ? "color-field" : undefined} key={key}><span>{contentLabels[key]}</span>{isColor ? <div><input type="color" value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /><input value={value} pattern="#[0-9a-fA-F]{6}" onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /></div> : value.length > 80 ? <textarea value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /> : <input value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} />}</label>; })}<button className="button dark" type="submit">Salvar aparência e textos</button></form></section>
+      )}
+      {tab === "inicio" && <section className="admin-section"><div><p className="eyebrow">Página inicial / Aparência</p><h2>Cores e títulos</h2><p className="admin-help">Somente os campos comerciais autorizados podem ser alterados.</p></div><form className="content-form" onSubmit={savePhrases}>{editableContentKeys.map(key => { const value = content[key]; const isColor = colorContentKeys.has(key); return <label className={isColor ? "color-field" : undefined} key={key}><span>{contentLabels[key]}</span>{isColor ? <div><input type="color" value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /><input value={value} pattern="#[0-9a-fA-F]{6}" onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /></div> : value.length > 80 ? <textarea value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /> : <input value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} />}</label>; })}<button className="button dark" type="submit">Salvar aparência e textos</button></form></section>}
+      {tab === "pecas" && (
       <section className="admin-section products-admin">
         <div>
-          <p className="eyebrow">02 / Catálogo</p><h2>Peças</h2>
+          <p className="eyebrow">Peças / Catálogo</p><h2>Peças</h2>
           <p className="admin-help">A ordem desta lista é a ordem da vitrine. As {featuredCount} primeiras peças visíveis aparecem em Destaques na página inicial.</p>
           <button className="button dark admin-add" type="button" onClick={addProduct}>+ Nova peça</button>
           <label className="show-prices-toggle">
@@ -319,9 +342,11 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           );
         })}</div>
       </section>
+      )}
+      {tab === "inicio" && (
       <section className="admin-section">
         <div>
-          <p className="eyebrow">03 / Fotos do site</p><h2>Início, categorias e loja</h2>
+          <p className="eyebrow">Página inicial / Fotos</p><h2>Início, categorias e loja</h2>
           <p className="admin-help">As fotos são otimizadas automaticamente e publicadas assim que terminam de enviar. Textos só são publicados ao clicar em Salvar.</p>
         </div>
         <form className="site-photos" onSubmit={savePhrases}>
@@ -347,9 +372,11 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           <button className="button dark" type="submit">Salvar selo e descrições</button>
         </form>
       </section>
+      )}
+      {tab === "avisos" && (
       <section className="admin-section">
         <div>
-          <p className="eyebrow">04 / Avisos e campanha</p><h2>Faixa do topo e banner</h2>
+          <p className="eyebrow">Avisos / Faixa e campanha</p><h2>Faixa do topo e banner</h2>
           <p className="admin-help">Os avisos aparecem um por vez na faixa rosa do topo, trocando a cada 5 segundos. O banner de campanha aparece na página inicial, logo abaixo da foto principal.</p>
         </div>
         <div className="announcements-admin">
@@ -388,9 +415,11 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           </form>
         </div>
       </section>
+      )}
+      {tab === "loja" && (
       <section className="admin-section">
         <div>
-          <p className="eyebrow">05 / Dados da loja</p><h2>Contato e dados legais</h2>
+          <p className="eyebrow">Loja / Dados</p><h2>Contato e dados legais</h2>
           <p className="admin-help">Aparecem no rodapé, na seção da loja, na página de informações e em todos os botões de WhatsApp do site.</p>
           {legalMissing && <p className="admin-warning">Razão social (ou nome completo), CPF/CNPJ e e-mail são obrigatórios por lei para vender pela internet. Preencha antes de divulgar o site.</p>}
         </div>
@@ -405,6 +434,7 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           <button className="button dark" type="submit">Salvar dados da loja</button>
         </form>
       </section>
+      )}
     </main>
   );
 }
@@ -427,6 +457,30 @@ function formatDate(value: string) {
 
 function formatSize(bytes: number) {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+}
+
+const adminTabs = [
+  { id: "resumo", label: "Resumo" },
+  { id: "pecas", label: "Peças" },
+  { id: "inicio", label: "Página inicial" },
+  { id: "avisos", label: "Avisos" },
+  { id: "loja", label: "Loja" },
+] as const;
+
+type AdminTab = (typeof adminTabs)[number]["id"];
+
+function AdminTabs({ active, onChange, legalMissing, productCount }: { active: AdminTab; onChange: (tab: AdminTab) => void; legalMissing: boolean; productCount: number }) {
+  return (
+    <nav className="admin-tabs" aria-label="Seções do painel">
+      {adminTabs.map(item => (
+        <button key={item.id} type="button" className={active === item.id ? "active" : undefined} aria-current={active === item.id ? "page" : undefined} onClick={() => onChange(item.id)}>
+          {item.label}
+          {item.id === "pecas" && <small>{productCount}</small>}
+          {item.id === "loja" && legalMissing && <span className="admin-tab-alert" title="Faltam dados obrigatórios">!</span>}
+        </button>
+      ))}
+    </nav>
+  );
 }
 
 function AdminExternalArrow() {
