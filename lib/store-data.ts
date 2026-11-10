@@ -1,9 +1,10 @@
+import { cache } from "react";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { productDetails as productDetailsTable, productStatus as productStatusTable, products as productsTable, siteContent } from "@/db/schema";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { isSafeLink, sanitizeAnnouncements } from "@/lib/campaign";
-import { isSiteImage } from "@/lib/site-image";
+import { isSiteImage } from "@/lib/validation";
 import { sanitizeStoreInfoValue, storeInfoDefaults, storeInfoKeys, type StoreInfoKey } from "@/lib/store-info";
 
 export type StoreContent = {
@@ -153,7 +154,12 @@ const baseProducts: Omit<StoreProduct, keyof ProductExtras>[] = [
 export const defaultProducts: StoreProduct[] = baseProducts.map(product => ({ ...product, ...emptyExtras }));
 
 // O painel usa includeInactive para listar produtos desativados e permitir reativá-los.
-export async function getStoreData({ includeInactive = false } = {}): Promise<{ content: StoreContent; products: StoreProduct[] }> {
+export function getStoreData({ includeInactive = false } = {}): Promise<{ content: StoreContent; products: StoreProduct[] }> {
+  return loadStoreData(includeInactive);
+}
+
+// cache(): título da página e conteúdo leem a loja uma vez só por requisição.
+const loadStoreData = cache(async (includeInactive: boolean): Promise<{ content: StoreContent; products: StoreProduct[] }> => {
   try {
     const db = getDb();
     const [contentRows, productRows] = await Promise.all([
@@ -183,9 +189,22 @@ export async function getStoreData({ includeInactive = false } = {}): Promise<{ 
     const products = [...productMap.values()].filter(product => includeInactive || product.active).sort((a, b) => a.sortOrder - b.sortOrder);
     return { content, products };
   } catch (error) {
-    console.error("Store data fallback", error);
+    // Só usa o catálogo de exemplo quando o banco ainda não foi criado (primeira publicação).
+    // Em outras falhas, mostrar o catálogo antigo traria de volta peças excluídas; melhor mostrar erro.
+    if (!isMissingDatabase(error)) throw error;
+    console.error("Store data fallback (database not ready)", error);
     return { content: defaultContent, products: defaultProducts.filter(product => includeInactive || product.active) };
   }
+});
+
+function isMissingDatabase(error: unknown) {
+  const text = String(error instanceof Error ? `${error.message} ${String(error.cause ?? "")}` : error);
+  return /no such table|binding `DB` is unavailable/i.test(text);
+}
+
+export async function productExists(id: string) {
+  const rows = await getDb().select({ id: productsTable.id }).from(productsTable).where(eq(productsTable.id, id)).limit(1);
+  return rows.length > 0;
 }
 
 // Marca interna (não editável pelo painel) que indica que o catálogo já está todo no banco.
@@ -204,16 +223,26 @@ export async function ensureCatalogSeeded(userId: string) {
   await db.insert(siteContent).values({ key: catalogSeededKey, value: "1", updatedAt: now, updatedBy: userId }).onConflictDoNothing();
 }
 
+// Grava todas as posições de uma vez (uma ida ao banco, tudo ou nada).
 export async function reorderProducts(ids: string[], userId: string) {
+  if (!ids.length) return;
   const db = getDb();
   const now = new Date().toISOString();
-  for (const [index, id] of ids.entries()) {
-    await db.update(productsTable).set({ sortOrder: index + 1, updatedAt: now, updatedBy: userId }).where(eq(productsTable.id, id));
-  }
+  const updates = ids.map((id, index) => db.update(productsTable).set({ sortOrder: index + 1, updatedAt: now, updatedBy: userId }).where(eq(productsTable.id, id)));
+  await db.batch(updates as [typeof updates[number], ...typeof updates]);
 }
 
-export async function deleteProduct(id: string) {
+// Exclui a peça e devolve as fotos dela, para a rota apagar os arquivos do armazenamento.
+export async function deleteProduct(id: string): Promise<string[]> {
   const db = getDb();
+  const [row] = await db.select({ imageUrl: productsTable.imageUrl }).from(productsTable).where(eq(productsTable.id, id)).limit(1);
+  const photos = row ? [row.imageUrl] : [];
+  try {
+    const [details] = await db.select({ gallery: productDetailsTable.gallery }).from(productDetailsTable).where(eq(productDetailsTable.productId, id)).limit(1);
+    if (details) photos.push(...parseList(details.gallery));
+  } catch (error) {
+    console.error("Product gallery not read", error);
+  }
   await db.delete(productsTable).where(eq(productsTable.id, id));
   try {
     await db.delete(productDetailsTable).where(eq(productDetailsTable.productId, id));
@@ -225,6 +254,7 @@ export async function deleteProduct(id: string) {
   } catch (error) {
     console.error("Product status not deleted", error);
   }
+  return photos;
 }
 
 // Devolve as chaves recusadas (valor inválido), para o painel avisar a dona.
@@ -232,13 +262,16 @@ export async function saveContent(values: Partial<StoreContent>, userId: string)
   const db = getDb();
   const now = new Date().toISOString();
   const rejected: string[] = [];
-  for (const [key, raw] of Object.entries(values)) {
+  const writes = [];
+  for (const [key, raw] of Object.entries(values ?? {})) {
     if (!adminEditableContentKeys.has(key) || typeof raw !== "string") continue;
     const value = sanitizeContentValue(key, raw);
     if (value === null) { rejected.push(key); continue; }
-    await db.insert(siteContent).values({ key, value, updatedAt: now, updatedBy: userId })
-      .onConflictDoUpdate({ target: siteContent.key, set: { value, updatedAt: now, updatedBy: userId } });
+    writes.push(db.insert(siteContent).values({ key, value, updatedAt: now, updatedBy: userId })
+      .onConflictDoUpdate({ target: siteContent.key, set: { value, updatedAt: now, updatedBy: userId } }));
   }
+  // Uma ida ao banco para todos os campos (tudo ou nada).
+  if (writes.length) await db.batch(writes as [typeof writes[number], ...typeof writes]);
   return rejected;
 }
 

@@ -98,28 +98,50 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
 
   async function toggleShowPrices(show: boolean) {
     const value = show ? "1" : "";
+    const previous = content.showPrices;
     setContent(current => ({ ...current, showPrices: value }));
-    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ showPrices: value }) });
-    setStatus(!response.ok ? "Não foi possível salvar a opção de preços." : show ? "Preços visíveis no site." : "Preços ocultos: o site mostra \"Valor sob consulta\".");
+    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ showPrices: value }) }).catch(() => null);
+    if (!response?.ok) {
+      // Volta a caixa ao estado anterior, para o painel não mostrar algo diferente do site.
+      setContent(current => ({ ...current, showPrices: previous }));
+      setStatus("Não foi possível salvar a opção de preços.");
+      return;
+    }
+    setStatus(show ? "Preços visíveis no site." : "Preços ocultos: o site mostra \"Valor sob consulta\".");
   }
 
   async function saveCampaign(event: React.FormEvent) {
     event.preventDefault();
     if (content.campaignLink && !isSafeLink(content.campaignLink)) { setStatus("O link do botão não é válido. Use um endereço que comece com https:// ou com / (página do site)."); return; }
     if (content.campaignStart && content.campaignEnd && content.campaignEnd < content.campaignStart) { setStatus("A data de fim é antes da data de início."); return; }
-    const keys = ["campaignEnabled", "campaignTitle", "campaignText", "campaignButton", "campaignLink", "campaignStart", "campaignEnd"] as const;
-    setStatus("Salvando campanha…");
-    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.fromEntries(keys.map(key => [key, content[key]]))) });
-    setStatus(response.ok ? "Campanha salva." : "Não foi possível salvar a campanha.");
+    await saveContentKeys(["campaignEnabled", "campaignTitle", "campaignText", "campaignButton", "campaignLink", "campaignStart", "campaignEnd"], "Campanha salva.");
   }
   // Posição de cada peça visível na vitrine: as primeiras aparecem em "Destaques" na página inicial.
   const visibleOrder = products.filter(product => product.active && !isUnsaved(product.id)).map(product => product.id);
 
-  async function savePhrases(event: React.FormEvent) {
+  // Grava só os campos da seção que está sendo salva; o que está em edição em outras abas não vai junto.
+  async function saveContentKeys(keys: readonly (keyof StoreContent)[], successMessage: string) {
+    setStatus("Salvando…");
+    const values = Object.fromEntries(keys.map(key => [key, content[key]]));
+    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(values) });
+    if (!response.ok) { setStatus("Não foi possível salvar. Tente de novo."); return false; }
+    const { rejected = [] } = await response.json() as { rejected?: string[] };
+    if (rejected.length) {
+      setStatus(`Algumas alterações não foram aceitas: ${rejected.map(key => contentLabels[key] ?? key).join(", ")}. Confira e tente de novo.`);
+      return false;
+    }
+    setStatus(successMessage);
+    return true;
+  }
+
+  async function saveAppearance(event: React.FormEvent) {
     event.preventDefault();
-    setStatus("Salvando textos…");
-    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(content) });
-    setStatus(response.ok ? "Textos publicados com sucesso." : "Não foi possível salvar os textos.");
+    await saveContentKeys(editableContentKeys, "Cores e títulos publicados.");
+  }
+
+  async function saveSitePhotoTexts(event: React.FormEvent) {
+    event.preventDefault();
+    await saveContentKeys(["heroBadge", ...categories.map(category => categoryDescriptionKey(category.slug))], "Selo e descrições publicados.");
   }
 
   // Fotos do site (página inicial, categorias, loja): publicadas assim que o envio termina.
@@ -160,10 +182,16 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
 
     // Peça nova ganha o endereço definitivo a partir do nome (ex.: /produto/vestido-floral-k3d9).
     const wasUnsaved = isUnsaved(product.id);
-    const toSave = wasUnsaved ? { ...product, id: `${slugify(product.name)}-${product.id.slice(-4)}` } : product;
+    let toSave = wasUnsaved ? { ...product, id: `${slugify(product.name)}-${product.id.slice(-4)}` } : product;
 
     setStatus(`Salvando ${toSave.name}…`);
-    const response = await fetch("/api/admin/products", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(toSave) });
+    const put = (item: StoreProduct) => fetch("/api/admin/products", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...item, isNew: wasUnsaved }) });
+    let response = await put(toSave);
+    // Endereço já usado por outra peça: tenta com outro final, sem sobrescrever a existente.
+    for (let attempt = 0; response.status === 409 && attempt < 3; attempt++) {
+      toSave = { ...toSave, id: `${slugify(product.name)}-${Math.random().toString(36).slice(2, 6)}` };
+      response = await put(toSave);
+    }
     if (!response.ok) { setStatus(`Não foi possível salvar ${toSave.name}.`); return; }
     const result = await response.json() as { detailsSaved?: boolean };
 
@@ -289,7 +317,7 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
         )}
       </section>
       )}
-      {tab === "inicio" && <section className="admin-section"><div><p className="eyebrow">Página inicial / Aparência</p><h2>Cores e títulos</h2><p className="admin-help">Somente os campos comerciais autorizados podem ser alterados.</p></div><form className="content-form" onSubmit={savePhrases}>{editableContentKeys.map(key => { const value = content[key]; const isColor = colorContentKeys.has(key); return <label className={isColor ? "color-field" : undefined} key={key}><span>{contentLabels[key]}</span>{isColor ? <div><input type="color" value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /><input value={value} pattern="#[0-9a-fA-F]{6}" onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /></div> : value.length > 80 ? <textarea value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /> : <input value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} />}</label>; })}<button className="button dark" type="submit">Salvar aparência e textos</button></form></section>}
+      {tab === "inicio" && <section className="admin-section"><div><p className="eyebrow">Página inicial / Aparência</p><h2>Cores e títulos</h2><p className="admin-help">Somente os campos comerciais autorizados podem ser alterados.</p></div><form className="content-form" onSubmit={saveAppearance}>{editableContentKeys.map(key => { const value = content[key]; const isColor = colorContentKeys.has(key); return <label className={isColor ? "color-field" : undefined} key={key}><span>{contentLabels[key]}</span>{isColor ? <div><input type="color" value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /><input value={value} pattern="#[0-9a-fA-F]{6}" onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /></div> : value.length > 80 ? <textarea value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} /> : <input value={value} onChange={event => setContent(current => ({ ...current, [key]: event.target.value }))} />}</label>; })}<button className="button dark" type="submit">Salvar aparência e textos</button></form></section>}
       {tab === "pecas" && (
       <section className="admin-section products-admin">
         <div>
@@ -349,7 +377,7 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           <p className="eyebrow">Página inicial / Fotos</p><h2>Início, categorias e loja</h2>
           <p className="admin-help">As fotos são otimizadas automaticamente e publicadas assim que terminam de enviar. Textos só são publicados ao clicar em Salvar.</p>
         </div>
-        <form className="site-photos" onSubmit={savePhrases}>
+        <form className="site-photos" onSubmit={saveSitePhotoTexts}>
           <div className="site-photos-row">
             {sitePhotoField("heroImage", "Foto principal da página inicial")}
             <div className="site-photo-text">
@@ -497,6 +525,14 @@ const contentLabels: Record<string, string> = {
   themeAccent: "Cor de destaque",
   themeBackground: "Cor do fundo",
   themeSurface: "Cor das áreas suaves",
+  // Usados só nas mensagens de campo recusado.
+  heroBadge: "Selo da foto principal",
+  campaignTitle: "Título da campanha",
+  campaignText: "Texto da campanha",
+  campaignButton: "Texto do botão",
+  campaignLink: "Link do botão",
+  campaignStart: "Data de início",
+  campaignEnd: "Data de fim",
 };
 
 const editableContentKeys: (keyof StoreContent)[] = [

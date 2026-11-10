@@ -1,20 +1,18 @@
 import { NextResponse } from "next/server";
 import { getMasterUser } from "@/app/admin-auth";
 import { getCategory } from "@/lib/categories";
-import { deleteProduct, reorderProducts, saveProduct, type StoreProduct } from "@/lib/store-data";
-import { isSiteImage } from "@/lib/site-image";
+import { env } from "cloudflare:workers";
+import { deleteProduct, productExists, reorderProducts, saveProduct, type StoreProduct } from "@/lib/store-data";
 import { productSizes } from "@/lib/store-info";
-
-// O id vira o endereço da peça (/produto/id), então só letras minúsculas, números e hífen.
-function isProductId(value: unknown): value is string {
-  return typeof value === "string" && /^[a-z0-9][a-z0-9-]{0,79}$/.test(value);
-}
+import { isProductId, isSiteImage } from "@/lib/validation";
 
 export async function PUT(request: Request) {
   const user = await getMasterUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const product = await request.json() as Partial<StoreProduct>;
+  const product = await request.json() as Partial<StoreProduct> & { isNew?: boolean };
   if (!isProductId(product.id) || !product.name || !getCategory(String(product.category)) || !isSiteImage(product.imageUrl)) return NextResponse.json({ error: "invalid_product" }, { status: 400 });
+  // Peça nova nunca sobrescreve outra com o mesmo endereço; o painel tenta de novo com outro final.
+  if (product.isNew && await productExists(product.id)) return NextResponse.json({ error: "id_taken" }, { status: 409 });
   const detailsSaved = await saveProduct({
     id: product.id,
     sku: String(product.sku ?? "").slice(0, 40),
@@ -43,7 +41,12 @@ export async function DELETE(request: Request) {
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const id = new URL(request.url).searchParams.get("id");
   if (!isProductId(id)) return NextResponse.json({ error: "invalid_product" }, { status: 400 });
-  await deleteProduct(id);
+  const photos = await deleteProduct(id);
+  // Apaga do armazenamento as fotos que foram enviadas pelo painel para esta peça.
+  if (env.BUCKET) {
+    const keys = photos.filter(url => url.startsWith("/media/")).map(url => url.slice("/media/".length));
+    await Promise.all(keys.map(key => env.BUCKET!.delete(key).catch(error => console.error("Photo not deleted", key, error))));
+  }
   return NextResponse.json({ ok: true });
 }
 
