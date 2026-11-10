@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { isExternalLink } from "@/lib/campaign";
 import { getCategory } from "@/lib/categories";
+import type { CustomerPhoto } from "@/lib/customer-photos";
 import type { StoreProduct } from "@/lib/store-data";
 import { priceView, productBadge, productPath, productWhatsappMessage, whatsappLink, type PriceView } from "@/lib/store-info";
 
@@ -27,6 +28,26 @@ export function ProductCard({ product, selected, onToggle, sizes, whatsappNumber
 export function PriceTag({ view, className = "" }: { view: PriceView; className?: string }) {
   if (!view.original) return <p className={className}>{view.current}</p>;
   return <p className={`${className} price-sale`}><s aria-label={`De ${view.original}`}>{view.original}</s> <strong aria-label={`por ${view.current}`}>{view.current}</strong></p>;
+}
+
+// Seção "Elas usam": clientes reais usando peças da loja (fotos enviadas pela dona, com autorização).
+export function CustomerGallery({ photos, instagramUrl }: { photos: CustomerPhoto[]; instagramUrl: string }) {
+  return (
+    <section className="customer-gallery" aria-labelledby="elas-usam-titulo">
+      <div className="section-head">
+        <div><p className="eyebrow">Clientes reais</p><h2 id="elas-usam-titulo">Elas usam</h2></div>
+        <p>Clientes da Closet Paula Miranda com as peças da loja.{instagramUrl && <> Veja mais no <a href={instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <ExternalArrow /></a></>}</p>
+      </div>
+      <ul>
+        {photos.map((photo, index) => (
+          <li key={photo.image + index}>
+            <ResponsiveImage src={photo.image} sizes="(max-width: 680px) 70vw, 25vw" alt={photo.caption ? `Cliente da loja: ${photo.caption}` : "Cliente usando peça da Closet Paula Miranda"} />
+            {photo.caption && <span>{photo.caption}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 type CampaignProps = { title: string; text: string; button: string; link: string; image: string };

@@ -7,8 +7,8 @@ export const storeInfoDefaults = {
   storeWhatsapp: "5512997196086",
   storeAddress: "Rua Planura, 204",
   storeCity: "São José dos Campos — SP",
-  storeHours1: "Seg a sex: 09h às 18h",
-  storeHours2: "Sábado: 09h às 15h",
+  storeHours1: "Seg a sex: 10h às 18h",
+  storeHours2: "Sábado: 10h às 15h",
   storeInstagram: "https://www.instagram.com/closetpaulamiranda/",
   storeFacebook: "https://www.facebook.com/people/Closet-Paula-Miranda/61557378347822/",
   // Obrigatórios por lei (Decreto 7.962/2013) antes da abertura pública. Vazios não aparecem no site.

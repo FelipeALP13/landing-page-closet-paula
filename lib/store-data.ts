@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { productDetails as productDetailsTable, productStatus as productStatusTable, products as productsTable, siteContent } from "@/db/schema";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { isSafeLink, sanitizeAnnouncements } from "@/lib/campaign";
+import { sanitizeCustomerPhotos } from "@/lib/customer-photos";
 import { isSiteImage } from "@/lib/validation";
 import { sanitizeStoreInfoValue, storeInfoDefaults, storeInfoKeys, type StoreInfoKey } from "@/lib/store-info";
 
@@ -31,6 +32,7 @@ export type StoreContent = {
   campaignStart: string; // AAAA-MM-DD ou vazio
   campaignEnd: string;
   showPrices: string; // "1" = mostra preços; vazio = "Valor sob consulta"
+  customerPhotos: string; // lista JSON da seção "Elas usam"
 } & { [key: `cat_${string}`]: string } & Record<StoreInfoKey, string>;
 
 export type StoreProduct = {
@@ -89,6 +91,7 @@ export const defaultContent: StoreContent = {
   campaignStart: "",
   campaignEnd: "",
   showPrices: "",
+  customerPhotos: "",
   ...storeInfoDefaults,
   ...Object.fromEntries(categories.flatMap(category => [
     [categoryImageKey(category.slug), category.image],
@@ -121,6 +124,7 @@ const adminEditableContentKeys = new Set<string>([
   "campaignStart",
   "campaignEnd",
   "showPrices",
+  "customerPhotos",
   ...storeInfoKeys,
   ...categories.flatMap(category => [categoryImageKey(category.slug), categoryDescriptionKey(category.slug)]),
 ]);
@@ -136,6 +140,7 @@ function sanitizeContentValue(key: string, value: string): string | null {
   if (key === "announcements") return sanitizeAnnouncements(value);
   if (key === "campaignEnabled") return value === "1" ? "1" : "";
   if (key === "showPrices") return value === "1" ? "1" : "";
+  if (key === "customerPhotos") return sanitizeCustomerPhotos(value);
   if (key === "campaignStart" || key === "campaignEnd") return value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
   if (key === "campaignLink") return value === "" || isSafeLink(value) ? value.slice(0, 300) : null;
   return value.slice(0, 600);

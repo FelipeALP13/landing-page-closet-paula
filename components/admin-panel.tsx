@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { campaignStatus, isSafeLink, maxAnnouncements, parseAnnouncements, type Announcement } from "@/lib/campaign";
+import { maxCustomerPhotos, parseCustomerPhotos, type CustomerPhoto } from "@/lib/customer-photos";
 import { categories, categoryDescriptionKey, categoryImageKey } from "@/lib/categories";
 import { compressImage } from "@/lib/compress-image";
 import { AdminGuide } from "./admin-guide";
@@ -15,8 +16,8 @@ const storeFields: { key: StoreInfoKey; label: string; placeholder?: string; err
   { key: "storeWhatsapp", label: "WhatsApp da loja", placeholder: "(12) 99719-6086", error: "Número inválido. Use DDD + número, ex.: (12) 99719-6086.", hint: value => { const n = normalizeWhatsapp(value); return n ? `Aparece como ${formatPhone(n)}` : ""; } },
   { key: "storeAddress", label: "Endereço", placeholder: "Rua Planura, 204", error: "Endereço inválido." },
   { key: "storeCity", label: "Cidade e estado", placeholder: "São José dos Campos — SP", error: "Cidade inválida." },
-  { key: "storeHours1", label: "Horário (linha 1)", placeholder: "Seg a sex: 09h às 18h", error: "Texto inválido." },
-  { key: "storeHours2", label: "Horário (linha 2)", placeholder: "Sábado: 09h às 15h", error: "Texto inválido." },
+  { key: "storeHours1", label: "Horário (linha 1)", placeholder: "Seg a sex: 10h às 18h", error: "Texto inválido." },
+  { key: "storeHours2", label: "Horário (linha 2)", placeholder: "Sábado: 10h às 15h", error: "Texto inválido." },
   { key: "storeInstagram", label: "Link do Instagram", placeholder: "https://www.instagram.com/…", error: "Use o link completo do perfil, começando com https://www.instagram.com/" },
   { key: "storeFacebook", label: "Link do Facebook", placeholder: "https://www.facebook.com/…", error: "Use o link completo da página, começando com https://www.facebook.com/" },
   { key: "storeLegalName", label: "Razão social ou nome completo", placeholder: "Como está no CNPJ ou CPF", error: "Texto inválido." },
@@ -55,6 +56,34 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
     window.scrollTo({ top: 0 });
   }
   const [announcementList, setAnnouncementList] = useState<Announcement[]>(() => parseAnnouncements(initialContent));
+  const [customerList, setCustomerList] = useState<CustomerPhoto[]>(() => parseCustomerPhotos(initialContent.customerPhotos));
+
+  async function saveCustomerPhotos(list: CustomerPhoto[]) {
+    setStatus("Salvando fotos de clientes…");
+    const value = JSON.stringify(list.map(photo => ({ image: photo.image, caption: photo.caption.trim() })));
+    const response = await fetch("/api/admin/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerPhotos: value }) });
+    const { rejected = [] } = response.ok ? await response.json() as { rejected?: string[] } : { rejected: ["customerPhotos"] };
+    if (rejected.length) { setStatus("Não foi possível salvar as fotos de clientes."); return; }
+    setContent(current => ({ ...current, customerPhotos: value }));
+    setStatus(list.length ? "Fotos de clientes publicadas na página inicial." : "Seção \"Elas usam\" escondida (sem fotos).");
+  }
+
+  // A foto nova entra no fim da lista e já é publicada; legendas são salvas pelo botão.
+  async function uploadCustomerPhoto(original?: File) {
+    if (!original) return;
+    setStatus("Otimizando a foto…");
+    const file = await compressImage(original);
+    setStatus(`Enviando foto (${formatSize(file.size)})…`);
+    const body = new FormData();
+    body.set("file", file);
+    body.set("productId", "site-elas-usam");
+    const upload = await fetch("/api/admin/upload", { method: "POST", body });
+    if (!upload.ok) { setStatus("Não foi possível enviar a imagem. Use uma foto JPG, PNG ou WebP."); return; }
+    const { url } = await upload.json() as { url: string };
+    const next = [...customerList, { image: url, caption: "" }];
+    setCustomerList(next);
+    await saveCustomerPhotos(next);
+  }
 
   const isUnsaved = (id: string) => unsavedIds.includes(id);
   const liveStatus = campaignStatus(content);
@@ -401,6 +430,28 @@ export function AdminPanel({ content: initialContent, products: initialProducts,
           })}</div>
           <button className="button dark" type="submit">Salvar selo e descrições</button>
         </form>
+      </section>
+      )}
+      {tab === "inicio" && (
+      <section className="admin-section">
+        <div>
+          <p className="eyebrow">Página inicial / Clientes</p><h2>Elas usam</h2>
+          <p className="admin-help">Fotos de clientes usando peças da loja, como no destaque “Elas usam” do Instagram. A seção só aparece no site quando tiver pelo menos uma foto.</p>
+          <p className="admin-warning">Use apenas fotos de clientes que autorizaram aparecer no site.</p>
+        </div>
+        <div className="customer-admin">
+          <div className="customer-admin-grid">
+            {customerList.map((photo, index) => (
+              <figure key={photo.image + index}>
+                <img src={photo.image} alt="" />
+                <button type="button" aria-label={`Remover foto ${index + 1}`} onClick={() => setCustomerList(current => current.filter((_, i) => i !== index))}>×</button>
+                <input value={photo.caption} maxLength={80} placeholder="Legenda (opcional), ex.: @cliente" aria-label={`Legenda da foto ${index + 1}`} onChange={event => { const caption = event.target.value; setCustomerList(current => current.map((item, i) => i === index ? { ...item, caption } : item)); }} />
+              </figure>
+            ))}
+          </div>
+          {customerList.length < maxCustomerPhotos && <label className="customer-admin-upload"><span>Adicionar foto ({customerList.length}/{maxCustomerPhotos})</span><input type="file" accept="image/*" onChange={event => { uploadCustomerPhoto(event.target.files?.[0]); event.target.value = ""; }} /></label>}
+          <button className="button dark" type="button" onClick={() => saveCustomerPhotos(customerList)}>Salvar fotos e legendas</button>
+        </div>
       </section>
       )}
       {tab === "avisos" && (

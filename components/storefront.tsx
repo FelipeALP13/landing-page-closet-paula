@@ -9,7 +9,8 @@ import { ProductDetail } from "./product-detail";
 import { parseAnnouncements } from "@/lib/campaign";
 import { trackWhatsAppClick } from "@/lib/track-click";
 import { AnnouncementBar } from "./announcement-bar";
-import { CampaignBanner, ExternalArrow, ProductCard, ResponsiveImage } from "./store-ui";
+import { parseCustomerPhotos } from "@/lib/customer-photos";
+import { CampaignBanner, CustomerGallery, ExternalArrow, ProductCard, ResponsiveImage } from "./store-ui";
 
 const quizCategories: Record<string, string> = { vestidos: "vestidos", tops: "croppeds e blusas", jeans: "jeans e calças", conjuntos: "look completo" };
 const quizOccasions: Record<string, string> = { dia: "dia a dia", trabalho: "trabalho", especial: "sair ou ocasião especial" };
@@ -35,6 +36,7 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
   const info = resolveStoreInfo(content);
   // Preços só aparecem se a dona ligar "Mostrar preços no site" no painel.
   const showPrices = content.showPrices === "1";
+  const customerPhotos = parseCustomerPhotos(content.customerPhotos);
   const wa = (message?: string) => whatsappLink(info.whatsappNumber, message);
 
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -246,6 +248,8 @@ export function Storefront({ content, products, mode, categorySlug, productId, o
         {(mode === "home" || mode === "category") && (
           <section className="products-section" id="vitrine"><div className="section-head"><div><p className="eyebrow">Vitrine CPM</p><h2>{productsTitle}</h2></div><p>{productsDescription}</p></div>{visibleProducts.length ? <div className="product-grid">{visibleProducts.map(product => <ProductCard key={product.id} whatsappNumber={info.whatsappNumber} showPrices={showPrices} product={product} selected={selected.includes(product.id)} onToggle={toggleProduct} sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw" />)}</div> : query ? <div className="empty-category"><span aria-hidden="true">✦</span><h3>Nada encontrado</h3><p>Não encontramos peças para essa busca. Tente outra palavra ou peça ajuda para a equipe.</p><button className="button dark" onClick={() => setSearch("")}>Limpar busca</button></div> : <div className="empty-category"><span aria-hidden="true">✦</span><h3>Novidades chegando</h3><p>Esta categoria já está preparada. Enquanto as fotos não chegam, a equipe pode mostrar as opções disponíveis pelo WhatsApp.</p><a className="button whatsapp" href={wa(`Olá! Gostaria de ver as opções disponíveis em ${category?.label}.`)} target="_blank" rel="noopener noreferrer">Ver opções no WhatsApp <ExternalArrow /></a></div>}</section>
         )}
+
+        {mode === "home" && customerPhotos.length > 0 && <CustomerGallery photos={customerPhotos} instagramUrl={info.instagramUrl} />}
 
         {mode !== "info" && (
           <section className="store" id="loja"><ResponsiveImage src={content.storeImage} sizes="(max-width: 680px) 100vw, 50vw" alt="Loja Closet Paula Miranda, na Rua Planura, 204" /><div><p className="eyebrow">Visite a gente</p><h2>Seu closet,<br /><em>bem de perto.</em></h2><p>{info.addressLine} — {info.cityLine}</p><p>{info.hours[0]}<br />{info.hours[1]}</p><a href={wa("Olá! Gostaria de combinar uma visita à loja.")} target="_blank" rel="noopener noreferrer">Combinar uma visita <ExternalArrow /></a></div></section>

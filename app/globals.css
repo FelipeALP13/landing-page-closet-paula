@@ -275,3 +275,24 @@
 .guide-body ol,.guide-body ul{margin:0;padding-left:20px;display:grid;gap:6px}
 .guide-body code{padding:1px 5px;background:#f1ebe3;font-size:13px}
 .guide-body .button{justify-self:start;margin-top:4px}
+
+/* Seção "Elas usam" */
+.customer-gallery{max-width:1540px;margin:auto;padding:clamp(60px,8vw,110px) clamp(18px,5vw,74px) 0}
+.customer-gallery .section-head a{color:var(--ink);border-bottom:1px solid}
+.customer-gallery ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.customer-gallery li{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--sand)}
+.customer-gallery img{width:100%;height:100%;object-fit:cover}
+.customer-gallery li span{position:absolute;left:10px;bottom:10px;padding:6px 9px;background:rgba(17,16,15,.78);color:#fff;font-size:11px;font-weight:700}
+@media(max-width:980px){.customer-gallery ul{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.customer-gallery{padding:60px 0 0}.customer-gallery .section-head{padding:0 14px}.customer-gallery ul{display:flex;gap:8px;overflow-x:auto;padding:0 14px;scroll-snap-type:x mandatory}.customer-gallery li{flex:0 0 70%;scroll-snap-align:start}}
+
+/* Painel: fotos de clientes */
+.customer-admin{display:grid;gap:16px}
+.customer-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.customer-admin-grid figure{position:relative;margin:0;display:grid;gap:6px;padding:8px;background:#fff;border:1px solid #ddd}
+.customer-admin-grid img{width:100%;aspect-ratio:3/4;object-fit:cover}
+.customer-admin-grid button{position:absolute;top:12px;right:12px;width:28px;height:28px;border:0;border-radius:50%;background:#fff;color:#b3261e;font-size:18px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.customer-admin-grid input{width:100%;padding:8px;border:1px solid #b8b0aa;font-size:12px}
+.customer-admin-upload{display:flex;flex-direction:column;gap:6px;padding:14px;background:#fff;border:1px dashed #b8b0aa}
+.customer-admin-upload span{font-size:10px;font-weight:800;text-transform:uppercase}
+.customer-admin>.button{justify-self:start}

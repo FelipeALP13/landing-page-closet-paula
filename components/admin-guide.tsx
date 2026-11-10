@@ -56,6 +56,22 @@ const topics: Topic[] = [
     ),
   },
   {
+    id: "elas-usam",
+    title: "Fotos de clientes (Elas usam)",
+    tab: "inicio",
+    tabLabel: "Ir para Página inicial",
+    body: (
+      <>
+        <ol>
+          <li>Na aba <b>Página inicial</b>, em “Elas usam”, toque em <b>Adicionar foto</b> e escolha a foto. Ela já aparece no site.</li>
+          <li>Se quiser, escreva uma legenda (ex.: o @ da cliente) e toque em <b>Salvar fotos e legendas</b>.</li>
+          <li>Para tirar uma foto, toque no <b>×</b> e salve.</li>
+        </ol>
+        <p><b>Importante:</b> use só fotos de clientes que autorizaram aparecer no site. A seção some sozinha quando não tem nenhuma foto.</p>
+      </>
+    ),
+  },
+  {
     id: "ordem",
     title: "Mudar a ordem e os destaques",
     tab: "pecas",
